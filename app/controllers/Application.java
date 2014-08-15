@@ -11,7 +11,9 @@ import model.play.helpers.JSONHelper;
 import model.play.helpers.ServerFile;
 import model.play.helpers.SessionManager;
 import model.play.helpers.UploadedFile;
+import model.play.helpers.UploadedZipFile;
 
+import org.apache.commons.io.FilenameUtils;
 import org.dolan.datastructures.IProcessedFile;
 import org.dolan.merger.Merger;
 import org.dolan.remoteaccess.ISFTPManager;
@@ -36,14 +38,14 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 
 /**
- * The Class Application.
- * This is the main entry point for the application. All HTTP routes start at this.
+ * The Class Application. This is the main entry point for the application. All
+ * HTTP routes start at this.
  */
 public class Application extends Controller {
 
 	/** The server for the first Debenhams API server. */
 	private static ISFTPManager sftpDebAPI1 = new SFTPManager("eap6", "176.74.183.149", 22, "prodapi", "/opt/jboss-eap-6.0/domain/servers/api01/log/");
-	
+
 	/** The server for the second Debenhams API server. */
 	private static ISFTPManager sftpDebAPI2 = new SFTPManager("eap6", "176.74.183.138", 22, "prodapi", "/opt/jboss-eap-6.0/domain/servers/api02/log/");
 
@@ -67,7 +69,14 @@ public class Application extends Controller {
 		if (rawFile != null) {
 			String fileName = rawFile.getFilename();
 			File file = rawFile.getFile();
-			UploadedFile fileWrapper = new UploadedFile(file, fileName);
+			
+			String fileType = FilenameUtils.getExtension(fileName);
+			IFileWrapper fileWrapper = null;
+			if (fileType.equals("zip")) {
+				fileWrapper = new UploadedZipFile(file, fileName);
+			} else {
+				fileWrapper = new UploadedFile(file, fileName);
+			}
 			Logger.log("UPLOADED FILE ID", fileWrapper.getID());
 			SessionManager.addFile(fileWrapper);
 
@@ -83,12 +92,16 @@ public class Application extends Controller {
 	}
 
 	/**
-	 * Searches and processes an uploaded Debenhams API file based on the order ID.
+	 * Searches and processes an uploaded Debenhams API file based on the order
+	 * ID.
 	 *
-	 * @param orderID the order id
+	 * @param orderID
+	 *            the order id
 	 * @return the HTTP result
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws InterruptedException the interrupted exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws InterruptedException
+	 *             the interrupted exception
 	 */
 	public static Result process(Integer orderID) throws IOException, InterruptedException {
 		List<IFileWrapper> files = SessionManager.getFiles();
@@ -102,15 +115,22 @@ public class Application extends Controller {
 	}
 
 	/**
-	 * Searches and processes Debenhams API files based on the order ID on the server.
+	 * Searches and processes Debenhams API files based on the order ID on the
+	 * server.
 	 *
-	 * @param fileIDStrings the file id strings
-	 * @param orderID the order id
+	 * @param fileIDStrings
+	 *            the file id strings
+	 * @param orderID
+	 *            the order id
 	 * @return the HTTP result
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws JSchException the JSch exception
-	 * @throws SftpException the SFTP exception
-	 * @throws InterruptedException the interrupted exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws JSchException
+	 *             the JSch exception
+	 * @throws SftpException
+	 *             the SFTP exception
+	 * @throws InterruptedException
+	 *             the interrupted exception
 	 */
 	public static Result processServer(String fileIDStrings, Integer orderID) throws IOException, JSchException, SftpException, InterruptedException {
 		String[] fileIDs = fileIDStrings.split(",");
@@ -140,12 +160,17 @@ public class Application extends Controller {
 	/**
 	 * Search an uploaded file based on a query and certain options.
 	 *
-	 * @param query the query
-	 * @param removeDuplicates remove duplicates or not
-	 * @param appendNewLine append new line or not
+	 * @param query
+	 *            the query
+	 * @param removeDuplicates
+	 *            remove duplicates or not
+	 * @param appendNewLine
+	 *            append new line or not
 	 * @return the HTTP result
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws InterruptedException the interrupted exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws InterruptedException
+	 *             the interrupted exception
 	 */
 	public static Result search(String query, boolean removeDuplicates, boolean appendNewLine) throws IOException, InterruptedException {
 		ISearcher searcher = new Searcher(10);
@@ -207,8 +232,10 @@ public class Application extends Controller {
 	 * Gets the API server files.
 	 *
 	 * @return the API server files
-	 * @throws JSchException the j sch exception
-	 * @throws SftpException the sftp exception
+	 * @throws JSchException
+	 *             the j sch exception
+	 * @throws SftpException
+	 *             the sftp exception
 	 */
 	public static Result getAPIServerFiles() throws JSchException, SftpException {
 		List<ServerFile> sFiles = sftpDebAPI2.getFiles("zip");
@@ -224,8 +251,7 @@ public class Application extends Controller {
 	}
 
 	/**
-	 * Gets the JavaScript routes.
-	 * Used in the JQuery
+	 * Gets the JavaScript routes. Used in the JQuery
 	 *
 	 * @return the HTTP result
 	 */

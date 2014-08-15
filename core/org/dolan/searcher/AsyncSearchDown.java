@@ -103,7 +103,7 @@ class AsyncSearchDown implements Runnable {
 
 			if (line == null) {
 				reader.setHasLines(false);
-				//this.callback.call(null); //this will return null at the end of every search. Maybe un-ideal.
+				this.callback.call(null); //this will return null at the end of every search. This will notify it is the end of search
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -81,6 +81,7 @@ public class ZipTool {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static File writeZip(String fileName, List<String> data) throws IOException {
+		Logger.log("CREATING ZIP FILE", fileName);
 		Map<String, String> entries = new HashMap<String, String>();
 		for (int i = 0; i < data.size(); i++) {
 			entries.put(data.get(i), "output (" + i + ").txt");

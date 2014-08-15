@@ -15,9 +15,9 @@ import org.dolan.datastructures.IProcessedFile;
 import org.dolan.datastructures.IThreadBlock;
 import org.dolan.datastructures.ProcessedFile;
 import org.dolan.merger.Merger;
+import org.dolan.tools.DebenhamsAPISearcher;
 import org.dolan.tools.IDebenhamsAPISearcher;
 import org.dolan.tools.Logger;
-import org.dolan.tools.DebenhamsAPISearcher;
 import org.dolan.ziptools.ZipTool;
 
 /**
@@ -40,9 +40,9 @@ public class Helper {
 	public static IProcessedFile processFile(IFileWrapper file, int orderID) throws IOException, InterruptedException {
 		if (file == null)
 			throw new FileNotFoundException("No file specified.");
-
+		Logger.log("UPLOADED FILE TO BE PROCESSED", file.getName());
+		
 		IDebenhamsAPISearcher searcher = new DebenhamsAPISearcher(file.getBufferedReader());
-		Logger.log("FILE TO BE PROCESSED", file.toString());
 		IProcessedFile processedFile = new ProcessedFile();
 
 		Thread findAllBlocksThread = searcher.asyncGetThreadBlocksWhichContain(orderID, (List<IThreadBlock> blocks) -> {
@@ -140,7 +140,6 @@ public class Helper {
 			fileStrings.add(file.toString());
 		}
 
-		ZipTool.writeZip("server-files.zip", fileStrings);
-		return null;
+		return ZipTool.writeZip("server-files.zip", fileStrings);
 	}
 }

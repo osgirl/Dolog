@@ -40,7 +40,11 @@ public class ProcessedFile implements IProcessedFile {
 	 */
 	@Override
 	public void append(List<IThreadBlock> tb) {
-		this.threadBlocks.addAll(tb);
+		for (IThreadBlock threadBlock : tb) {
+			if (threadBlock.getSize() > 0) 
+				this.threadBlocks.add(threadBlock);
+		}
+		
 	}
 
 	/* (non-Javadoc)
@@ -51,14 +55,14 @@ public class ProcessedFile implements IProcessedFile {
 		if (this.threadBlocks.size() == 0) {
 			return null;
 		}
-
-		if (threadBlockCount == this.threadBlocks.size() - 1 && lineCount == this.threadBlocks.get(this.threadBlocks.size() - 1).getSize()) {
-			return null;
-		}
 		
 		if (lineCount > this.threadBlocks.get(threadBlockCount).getSize() - 1) {
 			threadBlockCount++;
 			lineCount = 0;
+		}
+
+		if (threadBlockCount > this.threadBlocks.size() - 1) {
+			return null;
 		}
 
 		ILine line = this.threadBlocks.get(threadBlockCount).getLines().get(lineCount);
