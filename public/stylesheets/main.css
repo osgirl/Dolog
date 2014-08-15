@@ -1,0 +1,144 @@
+@font-face {
+    font-family: corki;
+    src: url(../fonts/Corki-Tuscan.otf);
+    font-style: normal;
+}
+.logo-font {
+    font-family: corki;
+    font-size: 300px;
+    color: #f1c40f;
+    text-shadow: 0px -2px 0px #fde37a, 0px 5px 0px #fff, 0px 10px 0px #34495e;
+}
+.login-icon {
+    position: relative;
+    left: 0px;
+    top: 0;
+}
+.active {
+    color: #fff;
+    background-color: #34495e;
+}
+.spacer {
+    margin-top: 100px;
+}
+.todo-search:before {
+    content: none;
+}
+.demo-headline {
+    padding-bottom: 70px;
+}
+/* Moving on to the styling, we'll start with the main progress bar first and then the value part of it. After that, we'll do some experiments :D */
+
+body {
+    //background: #322c35;
+
+}
+.uploadedfiletiles {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+.footer-logo {
+    width: 100px;
+    height: auto;
+    margin-bottom: 0px;
+    margin-top: 33px;
+}
+/* All good till now. Now we'll style the background */
+
+progress::-webkit-progress-bar {
+    background: #34495e;
+    border-radius: 50px;
+    padding: 2px;
+    box-shadow: 0 1px 0px 0 rgba(255, 255, 255, 0.2);
+}
+/* Now the value part */
+
+progress::-webkit-progress-value {
+    border-radius: 50px;
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+    background: -webkit-linear-gradient(45deg, transparent, transparent 33%, rgba(0, 0, 0, 0.1) 33%, rgba(0, 0, 0, 0.1) 66%, transparent 66%), -webkit-linear-gradient(top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.2)), -webkit-linear-gradient(left, #c0392b, #f1c40f);
+    /* Looks great, now animating it */
+    background-size: 75px 40px, 100% 100%, 100% 100%;
+    -webkit-animation: move 5s linear 0 infinite;
+    position: relative;
+}
+/* That's it! Now let's try creating a new stripe pattern and animate it using animation and keyframes properties  */
+
+@-webkit-keyframes move {
+    0% {
+        background-position: 0px 0px, 0 0, 0 0
+    }
+    100% {
+        background-position: -75px 0px, 0 0, 0 0
+    }
+}
+/* Prefix-free was creating issues with the animation */
+
+progress {
+    position: relative;
+}
+progress[value] {
+    /* Reset the default appearance */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Get rid of default border in Firefox. */
+    border: none;
+    margin: 50px auto;
+    display: block;
+    width: 100%;
+    height: 0px;
+    opacity: 0;
+}
+progress[value]::-webkit-progress-value::before {
+    content: attr(value);
+    position: absolute;
+    right: 0;
+    top: -100%;
+    color: red;
+    width: 20px;
+    height: 10px;
+    padding: 10px;
+}
+progress[value]::-moz-progress-bar {
+    background-image: -moz-linear-gradient(45deg, transparent, transparent 33%, rgba(0, 0, 0, 0.1) 33%, rgba(0, 0, 0, 0.1) 66%, transparent 66%), -moz-linear-gradient(top, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.2)), -moz-linear-gradient(left, #ba7448, #c4672d);
+    border-radius: 2px;
+    background-size: 35px 20px, 100% 100%, 100% 100%;
+}
+progress[value]::-webkit-progress-value:after {
+    /* Only webkit/blink browsers understand pseudo elements on pseudo classes. A rare phenomenon! */
+    content: attr(value);
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 13px;
+    right: 15px;
+    background-color: white;
+    border-radius: 100%;
+}
+p[data-value] {
+    position: relative;
+}
+/* The percentage will automatically fall in place as soon as we make the width fluid. Now making widths fluid. */
+
+p[data-value]:after {
+    content: attr(data-value)'%';
+    position: absolute;
+    right: 0;
+    top: 20px;
+}
+.silver-grey {
+    color: #bdc3c7;
+}
+.collapsed {
+    opacity: 0;
+    height: '0px';
+}
+.highlight {
+    background-color: #0ca0cc;
+}
+
+.selected-server-file {
+    background-color: #f1c40f;   
+}

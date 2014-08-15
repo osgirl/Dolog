@@ -1,0 +1,23 @@
+    <!--@helper.form(action = routes.Application.upload, 'id -> "uploadForm", 'enctype -> "multipart/form-data") {
+
+    
+        <input type="file" name="rawFile">
+
+        <p>
+            <input type="submit">
+        </p>
+
+
+
+
+    }-->
+
+<form action="/upload" method="POST" id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="rawFile">
+
+        <p>
+            <input type="submit">
+        </p>
+
+
+</form>
