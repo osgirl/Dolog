@@ -13,6 +13,7 @@ import play.mvc.Controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * The Class SessionManager.
@@ -24,16 +25,30 @@ public class SessionManager {
 	 * Adds the file to the cache and session.
 	 *
 	 * @param file the file
+	 * @return the JSON node
 	 */
-	public static void addFile(IFileWrapper file) {
+	public static ObjectNode addFile(IFileWrapper file) {
 		JsonNode rootNode = getSessionNode("fileIDs");
 		JsonNode fileIDs = rootNode.path("files");
+		
+		int count = 1;
+		if (file instanceof UploadedZipFile) {
+			count = ((UploadedZipFile)file).getAllBufferedReaders().size();
+		}
 
-		Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "id", "name", "size" }, new String[] { file.getID(), file.getName(), Long.toString(file.getSize()) });
+		Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "id", "name", "size", "count" }, new String[] { file.getID(), file.getName(), Long.toString(file.getSize()), Integer.toString(count) });
 
 		JSONHelper.addMapToJsonArrayNode(fileIDs, map);
 		Cache.set(file.getID(), file, 1800);
 		Controller.session("fileIDs", rootNode.toString());
+		
+		ObjectNode result = Json.newObject();
+		result.put("id", file.getID());
+		result.put("name", file.getName());
+		result.put("size", file.getSize());
+		result.put("count", count);
+
+		return result;
 	}
 
 	/**

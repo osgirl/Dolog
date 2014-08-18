@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import model.play.helpers.IFileWrapper;
+import model.play.helpers.UploadedZipFile;
 
 import org.dolan.datastructures.IProcessedFile;
 import org.dolan.datastructures.IThreadBlock;
@@ -38,11 +40,22 @@ public class Helper {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static IProcessedFile processFile(IFileWrapper file, int orderID) throws IOException, InterruptedException {
-		if (file == null)
-			throw new FileNotFoundException("No file specified.");
+		if (file == null) throw new FileNotFoundException("No file specified.");
+		
 		Logger.log("UPLOADED FILE TO BE PROCESSED", file.getName());
 		
-		IDebenhamsAPISearcher searcher = new DebenhamsAPISearcher(file.getBufferedReader());
+		IProcessedFile processedFile;
+		if (file instanceof UploadedZipFile) {
+			processedFile = processZipFile((UploadedZipFile) file, orderID);
+		} else {
+			processedFile = searchBufferedReader(file.getBufferedReader(), orderID);
+		}
+
+		return processedFile;
+	}
+	
+	private static IProcessedFile searchBufferedReader(BufferedReader reader, int orderID) throws IOException, InterruptedException {
+		IDebenhamsAPISearcher searcher = new DebenhamsAPISearcher(reader);
 		IProcessedFile processedFile = new ProcessedFile();
 
 		Thread findAllBlocksThread = searcher.asyncGetThreadBlocksWhichContain(orderID, (List<IThreadBlock> blocks) -> {
@@ -53,7 +66,26 @@ public class Helper {
 		});
 
 		findAllBlocksThread.join();
-
+		return processedFile;
+	}
+	
+	/**
+	 * Process zip file.
+	 *
+	 * @param file the file
+	 * @param orderID the order id
+	 * @return the i processed file
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
+	 */
+	private static IProcessedFile processZipFile(UploadedZipFile file, int orderID) throws IOException, InterruptedException {
+		ArrayList<IProcessedFile> processedFiles = new ArrayList<IProcessedFile>();
+		for (BufferedReader reader : file.getAllBufferedReaders()) {
+			processedFiles.add(searchBufferedReader(reader, orderID));
+		}
+		
+		Logger.log("MERGING FILES IN SAME ZIP TOGETHER");
+		IProcessedFile processedFile = Merger.merge(processedFiles);
 		return processedFile;
 	}
 
@@ -72,8 +104,7 @@ public class Helper {
 			return null;
 		}
 		for (IFileWrapper file : files) {
-			if (file == null)
-				return null;
+			if (file == null) throw new NullPointerException("One of the files doesn't exist for some reason.");
 			processedFiles.add(processFile(file, orderID));
 		}
 

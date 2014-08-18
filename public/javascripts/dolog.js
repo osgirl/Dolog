@@ -39,6 +39,14 @@ $(function () {
         imageNumber = generateNumberFromString(str, 14);
         return 'assets/images/icons/svg/' + imageNumber + '.svg';
     }
+    
+    function generateFileCountText(count) {
+        if (count < 2) {
+            return '';   
+        } else {
+            return "(" + count + " files)";
+        }
+    }
 
     function generateUploadedFileBlock(file) {
         var fileSize, fileBlock;
@@ -48,7 +56,7 @@ $(function () {
             fileSize = parseFloat(Math.round(file.size / 1000 * 100) / 100).toFixed(2) + " KB";
         }
 
-        fileBlock = $('<div id="fileBox" value=' + file.id + '><div class="col-xs-4"><div class="tile uploadedfiletiles"><img src="' + generateImageNameFromString(file.id) + '" class="tile-image big-illustration"><h3 class="tile-title">' + file.name + '</h3><p>' + fileSize + '</p><p>' + file.id + '</p><input class="btn btn-block btn-lg btn-warning deleteFileButton" type="button" value="Delete"></div></div></div>');
+        fileBlock = $('<div id="fileBox" value=' + file.id + '><div class="col-xs-4"><div class="tile uploadedfiletiles"><img src="' + generateImageNameFromString(file.id) + '" class="tile-image big-illustration"><h3 class="tile-title">' + file.name + '</h3><p>' + fileSize + ' ' + generateFileCountText(file.count) + '</p><p>' + file.id + '</p><input class="btn btn-block btn-lg btn-warning deleteFileButton" type="button" value="Delete"></div></div></div>');
         return fileBlock;
     }
 

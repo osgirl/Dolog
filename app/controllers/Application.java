@@ -25,7 +25,6 @@ import org.dolan.tools.Logger;
 import org.dolan.ziptools.ZipTool;
 
 import play.Routes;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
@@ -77,13 +76,9 @@ public class Application extends Controller {
 			} else {
 				fileWrapper = new UploadedFile(file, fileName);
 			}
-			Logger.log("UPLOADED FILE ID", fileWrapper.getID());
-			SessionManager.addFile(fileWrapper);
+			Logger.log("ADDING FILE TO CACHE", fileWrapper.getName());
+			ObjectNode result = SessionManager.addFile(fileWrapper);
 
-			ObjectNode result = Json.newObject();
-			result.put("id", fileWrapper.getID());
-			result.put("name", fileWrapper.getName());
-			result.put("size", fileWrapper.getSize());
 			return ok(result);
 		} else {
 			flash("error", "Missing file");
@@ -180,7 +175,6 @@ public class Application extends Controller {
 			return badRequest("No files uploaded");
 		}
 		for (IFileWrapper file : files) {
-			// TODO: add zip detection and extraction
 			searcher.setFile(file.getBufferedReader());
 			List<SearchResult> results = new ArrayList<SearchResult>();
 

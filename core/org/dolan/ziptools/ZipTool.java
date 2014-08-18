@@ -48,7 +48,8 @@ public class ZipTool {
 				Logger.log("NAME AND SIZE OF ZIP FILE ENTRY", ze.getName() + ", " + size);
 				BufferedReader br = new BufferedReader(new InputStreamReader(zf.getInputStream(ze)));
 				bufferedReaders.add(br);
-
+			} else {
+				Logger.log("FILE IN ZIP IS SIZE ZERO. WON'T BE RETURNING READER", ze.getName());
 			}
 		}
 

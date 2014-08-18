@@ -12,7 +12,7 @@ import java.io.FileReader;
 public class UploadedFile extends BaseFile implements IFileWrapper {
 
 	/** The file. */
-	private File file;
+	protected File file;
 
 	/**
 	 * Instantiates a new uploaded file.
@@ -24,15 +24,6 @@ public class UploadedFile extends BaseFile implements IFileWrapper {
 		super(name);
 		this.file = file;
 		this.size = file.length();
-	}
-
-	/**
-	 * Instantiates a new uploaded file.
-	 *
-	 * @param name the name
-	 */
-	public UploadedFile(String name) {
-		super(name);
 	}
 
 	/* (non-Javadoc)

@@ -10,6 +10,7 @@ import org.dolan.datastructures.IProcessedFile;
 import org.dolan.datastructures.IThreadBlock;
 import org.dolan.datastructures.ProcessedFile;
 import org.dolan.datastructures.ThreadBlock;
+import org.dolan.tools.Logger;
 
 /**
  * The Class Merger.
@@ -24,6 +25,11 @@ public class Merger {
 	 * @return the processed file
 	 */
 	public static IProcessedFile merge(List<IProcessedFile> files) {
+		if (files.size() < 2) {
+			Logger.log("NOTHING TO MERGE, SINGLE FILE");
+			return files.get(0);
+		}
+		
 		IProcessedFile processedFile = new ProcessedFile();
 		List<IThreadBlock> threadBlocks = new ArrayList<IThreadBlock>();
 		IThreadBlock tb = new ThreadBlock();
