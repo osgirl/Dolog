@@ -13,7 +13,7 @@ Download and install Activator: https://typesafe.com/activator
 Play Framework uses Activator.
 
 Once installed, navigate to the folder of this project and run
-activator run
+`activator run` in a shell such as cmd
 
 Go to http://localhost:9000
 
