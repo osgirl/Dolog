@@ -27,7 +27,7 @@ Go to http://localhost:9000
 6. Reap rewards
 
 ## To-do
-1. Stricter validation to make things tighter
-2. A new more optimised search algorithm
-3. Restrict HTTP requests per user
-4. Filter results function
+- [ ] Stricter validation to make things tighter
+- [ ] A new more optimised search algorithm
+- [ ] Restrict HTTP requests per user
+- [ ] Filter results function
