@@ -39,10 +39,10 @@ $(function () {
         imageNumber = generateNumberFromString(str, 14);
         return 'assets/images/icons/svg/' + imageNumber + '.svg';
     }
-    
+
     function generateFileCountText(count) {
         if (count < 2) {
-            return '';   
+            return '';
         } else {
             return "(" + count + " files)";
         }
@@ -68,7 +68,7 @@ $(function () {
             fileSize = parseFloat(Math.round(file.size / 1000 * 100) / 100).toFixed(2) + " KB";
         }
 
-        fileBlock = $('<div id="serverFileBox" value=' + file.name + '><div class="col-xs-4"><div class="tile uploadedfiletiles"><img src="' + generateImageNameFromString(file.name) + '" class="tile-image big-illustration"><h3 class="tile-title">' + file.name + '</h3><p>' + fileSize + '</p><p>' + file.id + '</p><input class="btn btn-block btn-lg btn-info selectFileButton" type="button" value="Select"></div></div></div>');
+        fileBlock = $('<div id="serverFileBox" value=' + file.name + '><div class="col-xs-4"><div class="tile uploadedfiletiles"><img src="' + generateImageNameFromString(file.name) + '" class="tile-image big-illustration"><h3 class="tile-title">' + file.name + '</h3><p>' + fileSize + '</p><p>' + file.date + '</p><input class="btn btn-block btn-lg btn-info selectFileButton" type="button" value="Select"></div></div></div>');
         return fileBlock;
     }
 
@@ -84,13 +84,16 @@ $(function () {
 
     function setUploadedFilesFromArray(files, fileBlockFunction, $filesDiv, $nofilesDiv) {
         var i;
+        if (!files) {
+            return;
+        }
         for (i = 0; i < files.length; i += 1) {
             setUploadedFileDetails(files[i], fileBlockFunction, $filesDiv, $nofilesDiv);
         }
     }
 
     function validateOrderIdField(str) {
-        var result = $.isNumeric(str);
+        var result = $.isNumeric(str) && str.length > 8 && str > 0;
 
         if (!result) {
             $("#process-text-input").addClass("has-error");
@@ -186,13 +189,23 @@ $(function () {
         var filesJSON, files;
         filesJSON = [];
         //filesJSON.fileIDs = [];
-        
+
         files = $("#server-files").find(".selected-server-file").parent().parent().each(function () {
             //filesJSON.fileIDs.push($(this).attr("value"));
             filesJSON.push($(this).attr("value"));
         });
 
         return filesJSON.toString();
+    }
+
+    function setMessageOnRefresh(message) {
+        $(window).bind('beforeunload', function () {
+            return message;
+        });
+    }
+
+    function removeMessageOnRefresh() {
+        $(window).unbind('beforeunload');
     }
 
     $(document).ready(function () {
@@ -368,6 +381,7 @@ $(function () {
                 }
             });
         }
+        //setMessageOnRefresh("Do not refresh or close this window. It is still processing!");
     });
 
     $("#searchButton").click(function () {
@@ -376,7 +390,24 @@ $(function () {
         javaRegex = regexToJavaRegex($("#searchQuery").val());
         removeDups = $("#duplicate-checkbox").is(':checked');
         appendLine = $("#new-line-checkbox").is(':checked');
-        
+
+
+        /*$.ajax({
+            url: "/search",
+            type: "GET",
+            //Ajax events
+            beforeSend: function (req) {},
+            success: function (res) {
+                alert();
+                removeMessageOnRefresh();
+            },
+            //error: errorHandler,
+            data: "query=" + query + "&removeDuplicates=" + removeDups + "&appendNewLine=" + appendLine,
+            contentType: "application/octet-stream"
+        });*/
+
+
+
         $.fileDownload("/search", {
             preparingMessageHtml: "Processing file. The download will begin automatically. Close this dialog when done.",
             failMessageHtml: "The session has expired or you didn't specify files. Please delete and re-upload files",
@@ -387,6 +418,7 @@ $(function () {
                 appendNewLine: appendLine
             }
         });
+        //setMessageOnRefresh("Do not refresh or close this window. It is still processing!");
     });
 
     $("#files").on("click", ".deleteFileButton", function (res) {
