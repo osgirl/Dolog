@@ -32,21 +32,7 @@ public class UploadedZipFile extends UploadedFile implements IFileWrapper {
 	 * @see model.play.helpers.UploadedFile#getBufferedReader()
 	 */
 	@Override
-	public BufferedReader getBufferedReader() {
-		try {
-			return ZipTool.getBufferedReadersFromZip(this.file).get(0);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	/**
-	 * Gets the all buffered readers instead of the one.
-	 *
-	 * @return the all buffered readers
-	 */
-	public List<BufferedReader> getAllBufferedReaders() {
+	public List<BufferedReader> getBufferedReaders() {
 		try {
 			return ZipTool.getBufferedReadersFromZip(this.file);
 		} catch (IOException e) {

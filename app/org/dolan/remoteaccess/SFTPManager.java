@@ -14,6 +14,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 /**
@@ -101,7 +102,10 @@ public class SFTPManager implements ISFTPManager {
 		for (int i = 0; i < filelist.size(); i++) {
 			String fileName = filelist.get(i).getFilename();
 			if (FilenameUtils.getExtension(fileName).equals(filterFileType)) {
-				files.add(new ServerFile(fileName));
+				SftpATTRS attrs = filelist.get(i).getAttrs();
+				String fileDate = attrs.getMtimeString();
+				long fileSize = attrs.getSize();
+				files.add(new ServerFile(fileName, fileSize, fileDate));
 				// Logger.log("FILE IN SERVER", filelist.get(i).getFilename());
 			}
 		}

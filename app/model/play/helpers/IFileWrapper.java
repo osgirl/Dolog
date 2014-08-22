@@ -1,6 +1,7 @@
 package model.play.helpers;
 
 import java.io.BufferedReader;
+import java.util.List;
 
 /**
  * The Interface IFileWrapper.
@@ -13,7 +14,7 @@ public interface IFileWrapper {
 	 *
 	 * @return the buffered reader
 	 */
-	BufferedReader getBufferedReader();
+	List<BufferedReader> getBufferedReaders();
 
 	/**
 	 * Gets the name.

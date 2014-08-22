@@ -18,9 +18,6 @@ import org.dolan.datastructures.IProcessedFile;
 import org.dolan.merger.Merger;
 import org.dolan.remoteaccess.ISFTPManager;
 import org.dolan.remoteaccess.SFTPManager;
-import org.dolan.searcher.ISearcher;
-import org.dolan.searcher.SearchResult;
-import org.dolan.searcher.Searcher;
 import org.dolan.tools.Logger;
 import org.dolan.ziptools.ZipTool;
 
@@ -68,7 +65,7 @@ public class Application extends Controller {
 		if (rawFile != null) {
 			String fileName = rawFile.getFilename();
 			File file = rawFile.getFile();
-			
+
 			String fileType = FilenameUtils.getExtension(fileName);
 			IFileWrapper fileWrapper = null;
 			if (fileType.equals("zip")) {
@@ -90,17 +87,17 @@ public class Application extends Controller {
 	 * Searches and processes an uploaded Debenhams API file based on the order
 	 * ID.
 	 *
-	 * @param orderID
-	 *            the order id
+	 * @param orderID the order id
 	 * @return the HTTP result
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws InterruptedException
-	 *             the interrupted exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
 	 */
 	public static Result process(Integer orderID) throws IOException, InterruptedException {
+		if (orderID < 0 && orderID.toString().length() < 8) {
+			return badRequest("Invalid orderID");
+		}
 		List<IFileWrapper> files = SessionManager.getFiles();
-		IProcessedFile processedFile = Helper.processFiles(files, orderID);
+		IProcessedFile processedFile = DebenhamsAPIHelper.processFiles(files, orderID);
 		if (processedFile == null) {
 			return ok("No files to process: " + files.toString());
 		}
@@ -113,21 +110,18 @@ public class Application extends Controller {
 	 * Searches and processes Debenhams API files based on the order ID on the
 	 * server.
 	 *
-	 * @param fileIDStrings
-	 *            the file id strings
-	 * @param orderID
-	 *            the order id
+	 * @param fileIDStrings the file id strings
+	 * @param orderID the order id
 	 * @return the HTTP result
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws JSchException
-	 *             the JSch exception
-	 * @throws SftpException
-	 *             the SFTP exception
-	 * @throws InterruptedException
-	 *             the interrupted exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws JSchException the JSch exception
+	 * @throws SftpException the SFTP exception
+	 * @throws InterruptedException the interrupted exception
 	 */
 	public static Result processServer(String fileIDStrings, Integer orderID) throws IOException, JSchException, SftpException, InterruptedException {
+		if (orderID < 0 && orderID.toString().length() < 8) {
+			return badRequest("Invalid orderID");
+		}
 		String[] fileIDs = fileIDStrings.split(",");
 		List<ServerFile> sFiles1 = sftpDebAPI1.getFiles("zip");
 		List<ServerFile> sFiles2 = sftpDebAPI2.getFiles("zip");
@@ -136,11 +130,11 @@ public class Application extends Controller {
 		for (String fileID : fileIDs) {
 			ServerFile file1 = ServerFile.findServerFileFromName(sFiles1, fileID);
 			file1.materialise(sftpDebAPI1);
-			IProcessedFile pfile1 = Helper.processFile(file1, orderID);
+			IProcessedFile pfile1 = DebenhamsAPIHelper.processFile(file1, orderID);
 
 			ServerFile file2 = ServerFile.findServerFileFromName(sFiles2, fileID);
 			file2.materialise(sftpDebAPI2);
-			IProcessedFile pfile2 = Helper.processFile(file2, orderID);
+			IProcessedFile pfile2 = DebenhamsAPIHelper.processFile(file2, orderID);
 
 			IProcessedFile pfile = Merger.merge(pfile1, pfile2);
 			processedFiles.add(pfile);
@@ -155,50 +149,21 @@ public class Application extends Controller {
 	/**
 	 * Search an uploaded file based on a query and certain options.
 	 *
-	 * @param query
-	 *            the query
-	 * @param removeDuplicates
-	 *            remove duplicates or not
-	 * @param appendNewLine
-	 *            append new line or not
+	 * @param query the query
+	 * @param removeDuplicates remove duplicates or not
+	 * @param appendNewLine append new line or not
 	 * @return the HTTP result
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws InterruptedException
-	 *             the interrupted exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws InterruptedException the interrupted exception
 	 */
 	public static Result search(String query, boolean removeDuplicates, boolean appendNewLine) throws IOException, InterruptedException {
-		ISearcher searcher = new Searcher(10);
 		List<IFileWrapper> files = SessionManager.getFiles();
-		StringBuilder sb = new StringBuilder();
-		if (files.size() == 0) {
+		String sb = SearcherHelper.search(files, query, removeDuplicates, appendNewLine);
+		if (sb == null) {
 			return badRequest("No files uploaded");
 		}
-		for (IFileWrapper file : files) {
-			searcher.setFile(file.getBufferedReader());
-			List<SearchResult> results = new ArrayList<SearchResult>();
-
-			Thread searchThread = searcher.scanDown(query.trim(), -1, (SearchResult result) -> {
-				results.add(result);
-			});
-
-			searchThread.join();
-
-			if (removeDuplicates) {
-				SearchResult.removeDuplicates(results);
-			}
-
-			for (SearchResult result : results) {
-				Logger.log(result);
-				sb.append(result.matchedPart);
-				if (appendNewLine) {
-					sb.append("\r\n");
-				}
-			}
-		}
-
 		response().setContentType("application/octet-stream");
-		return ok(sb.toString());
+		return ok(sb);
 	}
 
 	/**
@@ -226,10 +191,8 @@ public class Application extends Controller {
 	 * Gets the API server files.
 	 *
 	 * @return the API server files
-	 * @throws JSchException
-	 *             the j sch exception
-	 * @throws SftpException
-	 *             the sftp exception
+	 * @throws JSchException the j sch exception
+	 * @throws SftpException the sftp exception
 	 */
 	public static Result getAPIServerFiles() throws JSchException, SftpException {
 		List<ServerFile> sFiles = sftpDebAPI2.getFiles("zip");
@@ -237,7 +200,7 @@ public class Application extends Controller {
 		JsonNode arrayNode = JSONHelper.addArrayNodeToJsonNode(node, "files");
 
 		for (ServerFile file : sFiles) {
-			Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "id", "name", "size" }, new String[] { file.getID(), file.getName(), Long.toString(file.getSize()) });
+			Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "name", "size", "date" }, new String[] { file.getName(), Long.toString(file.getSize()), file.getDate() });
 			JSONHelper.addMapToJsonArrayNode(arrayNode, map);
 		}
 

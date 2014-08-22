@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * The Class UploadedFile.
@@ -30,7 +32,7 @@ public class UploadedFile extends BaseFile implements IFileWrapper {
 	 * @see model.play.helpers.IFileWrapper#getBufferedReader()
 	 */
 	@Override
-	public BufferedReader getBufferedReader() {
+	public List<BufferedReader> getBufferedReaders() {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
@@ -38,6 +40,6 @@ public class UploadedFile extends BaseFile implements IFileWrapper {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return br;
+		return Arrays.asList(br);
 	}
 }

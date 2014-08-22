@@ -7,7 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.dolan.remoteaccess.ISFTPManager;
@@ -26,22 +29,25 @@ public class ServerFile extends BaseFile implements IFileWrapper {
 
 	/** The br. */
 	private BufferedReader br;
+	private String date;
 
 	/**
 	 * Instantiates a new server file.
 	 *
 	 * @param name the name
 	 */
-	public ServerFile(String name) {
+	public ServerFile(String name, long size, String date) {
 		super(name);
+		this.size = size;
+		this.date = date;
 	}
 
 	/* (non-Javadoc)
 	 * @see model.play.helpers.IFileWrapper#getBufferedReader()
 	 */
 	@Override
-	public BufferedReader getBufferedReader() {
-		return this.br;
+	public List<BufferedReader> getBufferedReaders() {
+		return Arrays.asList(this.br);
 	}
 
 	/**
@@ -85,13 +91,13 @@ public class ServerFile extends BaseFile implements IFileWrapper {
 
 		List<BufferedReader> readers = ZipTool.getBufferedReadersFromZip(file);
 		BufferedReader reader = readers.get(0);
-		
+
 		if (!reader.ready()) {
 			throw new IOException("BufferedReader is empty. BufferedReader needs to be non-empty to extract data.");
 		}
 		setBufferedReader(reader);
 	}
-	
+
 	/**
 	 *  Gets data from the server.
 	 *
@@ -107,5 +113,9 @@ public class ServerFile extends BaseFile implements IFileWrapper {
 		InputStream inputStream = sftpChannel.get(sftpManager.getPath() + this.getName());
 		materialise(inputStream);
 		sftpManager.disconnect();
+	}
+
+	public String getDate() {
+		return this.date;
 	}
 }

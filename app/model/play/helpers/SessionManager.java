@@ -33,7 +33,7 @@ public class SessionManager {
 		
 		int count = 1;
 		if (file instanceof UploadedZipFile) {
-			count = ((UploadedZipFile)file).getAllBufferedReaders().size();
+			count = ((UploadedZipFile)file).getBufferedReaders().size();
 		}
 
 		Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "id", "name", "size", "count" }, new String[] { file.getID(), file.getName(), Long.toString(file.getSize()), Integer.toString(count) });
@@ -113,7 +113,7 @@ public class SessionManager {
 		if (jsonString == null) {
 			rootNode = JSONHelper.createEmptyJsonNode();
 			JSONHelper.addArrayNodeToJsonNode(rootNode, "files");
-			Controller.session(key, jsonString);
+			Controller.session(key, rootNode.toString());
 		} else {
 			rootNode = Json.parse(jsonString);
 		}
