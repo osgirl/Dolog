@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package model.play.helpers;
 
 import java.io.BufferedReader;
@@ -9,8 +12,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.dolan.remoteaccess.ISFTPManager;
@@ -20,6 +21,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class ServerFile.
  * A file which is on a server. It is different to a traditional file because it cannot have any physical data on it upon instantiation. This is because it will use too much memory storing the entire servers worth of data physically in memory.
@@ -29,12 +31,16 @@ public class ServerFile extends BaseFile implements IFileWrapper {
 
 	/** The br. */
 	private BufferedReader br;
+	
+	/** The date. */
 	private String date;
 
 	/**
 	 * Instantiates a new server file.
 	 *
 	 * @param name the name
+	 * @param size the size
+	 * @param date the date
 	 */
 	public ServerFile(String name, long size, String date) {
 		super(name);
@@ -115,6 +121,11 @@ public class ServerFile extends BaseFile implements IFileWrapper {
 		sftpManager.disconnect();
 	}
 
+	/**
+	 * Gets the date.
+	 *
+	 * @return the date
+	 */
 	public String getDate() {
 		return this.date;
 	}
