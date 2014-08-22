@@ -1,8 +1,3 @@
-This is your new Play application
-=================================
-
-This file will be packaged with your application, when using `activator dist`.
-
 # Dolog
 
 This is a log searcher which I created which eliminated the previous manual method of log
@@ -30,3 +25,9 @@ Go to http://localhost:9000
 4. Press Process
 5. If you wish to not upload, you can go to the Servers tab, and select log files directly from the server. Saves you downloading the log file from the server, then uploading it. Handy.
 6. Reap rewards
+
+## To-do
+1. Stricter validation to make things tighter
+2. A new more optimised search algorithm
+3. Restrict HTTP requests per user
+4. Filter results function
