@@ -23,7 +23,7 @@ import org.junit.Test;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 
-import controllers.Helper;
+import controllers.DebenhamsAPIHelper;
 
 public class ThreadSearcherTester {
 
@@ -104,11 +104,11 @@ public class ThreadSearcherTester {
 		for (String fileID : fileIDs) {
 			ServerFile file1 = ServerFile.findServerFileFromName(sFiles1, fileID);
 			file1.materialise(sftpDebAPI1);
-			IProcessedFile pfile1 = Helper.processFile(file1, orderID);
+			IProcessedFile pfile1 = DebenhamsAPIHelper.processFile(file1, orderID);
 
 			ServerFile file2 = ServerFile.findServerFileFromName(sFiles2, fileID);
 			file2.materialise(sftpDebAPI2);
-			IProcessedFile pfile2 = Helper.processFile(file2, orderID);
+			IProcessedFile pfile2 = DebenhamsAPIHelper.processFile(file2, orderID);
 
 			IProcessedFile pfile = Merger.merge(pfile1, pfile2);
 			processedFiles.add(pfile);
@@ -132,7 +132,7 @@ public class ThreadSearcherTester {
 		List<IFileWrapper> files = new ArrayList<IFileWrapper>();
 		files.add(file1);
 
-		IProcessedFile file = Helper.processFiles(files, orderID);
+		IProcessedFile file = DebenhamsAPIHelper.processFiles(files, orderID);
 		assertEquals(file.getLine(0) != null, true);
 	}
 }
