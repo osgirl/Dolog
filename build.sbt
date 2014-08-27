@@ -19,5 +19,6 @@ libraryDependencies ++= Seq(
 val appDependencies = Seq(
    // Add your project dependencies here,
   "commons-io" % "commons-io" % "2.4",
-    "com.jcraft.jsch" % "jsch" % "0.1.51"
+    "com.jcraft.jsch" % "jsch" % "0.1.51",
+    "com.apache.log4j" % "log4j" % "2.0.1"
 )
