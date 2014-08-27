@@ -69,7 +69,7 @@ public class LogTool {
 
 			LogTool.log("WRITTEN FILE TO DISK");
 		} catch (IOException e) {
-			e.printStackTrace();
+			LogTool.error("Cannot write to disk", e);
 		}
 	}
 
