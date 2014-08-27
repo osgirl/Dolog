@@ -3,6 +3,8 @@ package org.dolan.datastructures;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.dolan.tools.LogTool;
+
 /**
  * The Class Line.
  * The Line class is an implementation of ILine.
@@ -50,6 +52,7 @@ public class Line implements ILine {
 				int value = Integer.parseInt(m.group(1));
 				return value;
 			} catch (NumberFormatException nfe) {
+				LogTool.error("The thread number found is not an integer,  something wrong is happening", nfe);
 				return -1;
 			}
 		} else {
@@ -82,6 +85,7 @@ public class Line implements ILine {
 				 */
 				return time;
 			} catch (NumberFormatException nfe) {
+				LogTool.error("The time stamp cannot be parsed.", nfe);
 				return null;
 			}
 		} else {

@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.dolan.datastructures.IProcessedFile;
 import org.dolan.datastructures.IThreadBlock;
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 import org.dolan.ziptools.ZipTool;
 
 /**
@@ -28,7 +28,7 @@ public class Helper {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static File createFile(List<IProcessedFile> processedFiles) throws IOException {
-		Logger.log("AMOUNT OF FILES SELECTED TO BE ZIPPED/OR NOT", processedFiles.size());
+		LogTool.log("AMOUNT OF FILES SELECTED TO BE ZIPPED/OR NOT", processedFiles.size());
 		if (processedFiles.size() > 1) {
 			return Helper.toZipFile(processedFiles);
 		} else {

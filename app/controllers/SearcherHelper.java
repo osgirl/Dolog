@@ -10,7 +10,7 @@ import model.play.helpers.IFileWrapper;
 import org.dolan.searcher.ISearcher;
 import org.dolan.searcher.SearchResult;
 import org.dolan.searcher.Searcher;
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -67,7 +67,7 @@ public class SearcherHelper {
 	 */
 	private static List<SearchResult> searchFile(BufferedReader br, String query) throws InterruptedException, IOException {
 		if (br == null || query == null) {
-			Logger.log("BUFFERED READER OR QUERY IS NULL. QUERY IS", query);
+			LogTool.log("BUFFERED READER OR QUERY IS NULL. QUERY IS", query);
 		}
 		List<SearchResult> results = new ArrayList<SearchResult>();
 		ISearcher searcher = new Searcher(10);

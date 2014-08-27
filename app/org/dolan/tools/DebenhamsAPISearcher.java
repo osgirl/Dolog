@@ -36,7 +36,7 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 */
 	public DebenhamsAPISearcher(BufferedReader reader, int bufferSize) throws IOException {
 		if (!reader.ready()) {
-			throw new IOException("BufferedReader is empty. You are passing an empty/blank file into the ThreadSearcher, or something is wrong.");
+			throwBufferedReaderNotReadyException();
 		}
 		this.searcher = new Searcher(bufferSize);
 		searcher.setFile(reader);
@@ -136,7 +136,7 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 					sessionID = m.group(1);
 				}
 				possibleSessionIDs.add(sessionID);
-				Logger.log("FOUND SESSION ID", sessionID);
+				LogTool.log("FOUND SESSION ID", sessionID);
 			}
 		}
 
@@ -153,6 +153,17 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 		hs.addAll(list);
 		list.clear();
 		list.addAll(hs);
+	}
+
+	/**
+	 * Throw buffered reader not ready exception.
+	 *
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
+	private void throwBufferedReaderNotReadyException() throws IOException {
+		IOException ioe = new IOException("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server");
+		LogTool.error("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server", ioe);
+		throw ioe;
 	}
 
 }

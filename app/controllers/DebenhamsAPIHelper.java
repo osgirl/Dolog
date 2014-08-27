@@ -14,7 +14,7 @@ import org.dolan.datastructures.ProcessedFile;
 import org.dolan.merger.Merger;
 import org.dolan.tools.DebenhamsAPISearcher;
 import org.dolan.tools.IDebenhamsAPISearcher;
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 
 public class DebenhamsAPIHelper {
 
@@ -29,16 +29,20 @@ public class DebenhamsAPIHelper {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static IProcessedFile processFile(IFileWrapper file, int orderID) throws IOException, InterruptedException {
-		if (file == null) throw new FileNotFoundException("No file specified.");
+		if (file == null) {
+			IllegalArgumentException iae = new IllegalArgumentException("No file specified.");
+			LogTool.error("No file specified.", iae);
+			throw iae;
+		}
 		
-		Logger.log("UPLOADED FILE TO BE PROCESSED", file.getName());
+		LogTool.log("UPLOADED FILE TO BE PROCESSED", file.getName());
 		ArrayList<IProcessedFile> processedFiles = new ArrayList<IProcessedFile>();
 		
 		for(BufferedReader reader : file.getBufferedReaders()) {
 			processedFiles.add(searchBufferedReader(reader, orderID));
 		}
 
-		Logger.log("MERGING FILES IN SAME ZIP TOGETHER");
+		LogTool.log("MERGING FILES IN SAME ZIP TOGETHER");
 		IProcessedFile processedFile = Merger.merge(processedFiles);
 		return processedFile;
 	}
@@ -49,7 +53,7 @@ public class DebenhamsAPIHelper {
 
 		Thread findAllBlocksThread = searcher.asyncGetThreadBlocksWhichContain(orderID, (List<IThreadBlock> blocks) -> {
 			if (blocks.size() > 0) {
-				Logger.log("FOUND SEARCHED DATA ADDING THEM TO LIST");
+				LogTool.log("FOUND SEARCHED DATA ADDING THEM TO LIST");
 				processedFile.append(blocks);
 			}
 		});
@@ -73,11 +77,15 @@ public class DebenhamsAPIHelper {
 			return null;
 		}
 		for (IFileWrapper file : files) {
-			if (file == null) throw new NullPointerException("One of the files doesn't exist for some reason.");
+			if (file == null) {
+				IllegalArgumentException iae = new IllegalArgumentException("One of the files doesn't exist for some reason.");
+				LogTool.error("One of the files doesn't exist for some reason.", iae);
+				throw iae;
+			}
 			processedFiles.add(processFile(file, orderID));
 		}
 
-		Logger.log("MERGING FILES TOGETHER");
+		LogTool.log("MERGING FILES TOGETHER");
 		IProcessedFile processedFile = Merger.merge(processedFiles);
 		return processedFile;
 	}

@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 import org.dolan.ziptools.ZipTool;
 
 /**
@@ -22,7 +22,7 @@ public class UploadedZipFile extends UploadedFile implements IFileWrapper {
 	 */
 	public UploadedZipFile(File file, String name) {
 		super(file, name);
-		Logger.log("ZIP FILE UPLOADED", name);
+		LogTool.log("ZIP FILE UPLOADED", name);
 		if (!this.getFileType().equals("zip")) {
 			throw new ClassCastException("Must create UploadedZipFile with files which end in .zip. Is this really a Zip file?");
 		}
@@ -36,7 +36,7 @@ public class UploadedZipFile extends UploadedFile implements IFileWrapper {
 		try {
 			return ZipTool.getBufferedReadersFromZip(this.file);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LogTool.error("Something wrong with getting the buffered reader", e);
 		}
 		return null;
 	}

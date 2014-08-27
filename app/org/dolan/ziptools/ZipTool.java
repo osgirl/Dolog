@@ -16,7 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 
 /**
  * The Class ZipTool.
@@ -45,16 +45,17 @@ public class ZipTool {
 
 			long size = ze.getSize();
 			if (size > 0) {
-				Logger.log("NAME AND SIZE OF ZIP FILE ENTRY", ze.getName() + ", " + size);
+				LogTool.log("NAME AND SIZE OF ZIP FILE ENTRY", ze.getName() + ", " + size);
 				BufferedReader br = new BufferedReader(new InputStreamReader(zf.getInputStream(ze)));
 				bufferedReaders.add(br);
 			} else {
-				Logger.log("FILE IN ZIP IS SIZE ZERO. WON'T BE RETURNING READER", ze.getName());
+				LogTool.log("FILE IN ZIP IS SIZE ZERO. WON'T BE RETURNING READER", ze.getName());
 			}
 		}
 
 		if (bufferedReaders.size() == 0) {
-			throw new NullPointerException("Cannot load files. No files in zip file");
+			NullPointerException npe = new NullPointerException("Cannot load files. No files in zip file");
+			LogTool.error("Cannot load files. No files in zip file", npe);
 		}
 
 		checkIfReadersAreEmpty(bufferedReaders);
@@ -82,7 +83,7 @@ public class ZipTool {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static File writeZip(String fileName, List<String> data) throws IOException {
-		Logger.log("CREATING ZIP FILE", fileName);
+		LogTool.log("CREATING ZIP FILE", fileName);
 		Map<String, String> entries = new HashMap<String, String>();
 		for (int i = 0; i < data.size(); i++) {
 			entries.put(data.get(i), "output (" + i + ").txt");
@@ -131,7 +132,8 @@ public class ZipTool {
 		}
 
 		if (error) {
-			throw new IOException("Readers: " + badReaders.toString() + " is empty, there is something wrong with loading the BufferedReader from the Zip file.");
+			IOException ioe = new IOException("Readers: " + badReaders.toString() + " is empty, there is something wrong with loading the BufferedReader from the Zip file.");
+			LogTool.error("Something wrong with one of the readers in the ZipFile", ioe);
 		}
 	}
 	

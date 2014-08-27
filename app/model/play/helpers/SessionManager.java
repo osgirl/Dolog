@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 
 import play.cache.Cache;
 import play.libs.Json;
@@ -76,7 +76,7 @@ public class SessionManager {
 
 		while (ite.hasNext()) {
 			JsonNode temp = ite.next();
-			Logger.log("CACHE VALUE", temp.findValue("id").asText());
+			LogTool.log("CACHE VALUE", temp.findValue("id").asText());
 			Object cacheObj = Cache.get(temp.findValue("id").asText());
 			if (cacheObj == null) {
 				continue;

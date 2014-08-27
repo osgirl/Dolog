@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dolan.callbacks.ICallback;
+import org.dolan.tools.LogTool;
 
 /**
  * The Class AsyncSearchDown.
@@ -16,13 +17,13 @@ class AsyncSearchDown implements Runnable {
 
 	/** The reader. */
 	private IFileReaderContainer reader;
-	
+
 	/** The callback. */
 	private ICallback callback;
-	
+
 	/** The search pattern. */
 	private Pattern pattern;
-	
+
 	/** The amount of lines to search before stopping. */
 	private int amount;
 
@@ -46,86 +47,81 @@ class AsyncSearchDown implements Runnable {
 	 */
 	@Override
 	public void run() {
-		try {
-			int count = 0;
-			while (count != amount) {
-				if (reader.getBackBufferLineNumber() == 0) {
-					break;
+
+		int count = 0;
+		while (count != amount) {
+			if (reader.getBackBufferLineNumber() == 0) {
+				break;
+			}
+			searchFromSearchCache();
+			count++;
+		}
+
+		/*
+		 * while (reader.backBufferLineNumber > 0) { result =
+		 * searchFromSearchCache(); if (!result.equals("")) { return; } }
+		 */
+
+		String line = null;
+
+		mainLoop: while (count != amount) {
+			try {
+				line = this.reader.getReader().readLine();
+			} catch (IOException e) {
+				LogTool.error("Cannot read line from reader.", e);
+			}
+			if (line == null) {
+				reader.setHasLines(false);
+				break mainLoop;
+			}
+
+			reader.getSearchCache().add(line);
+			Matcher m = this.pattern.matcher(line);
+
+			reader.setCurrentLineNumber(reader.getCurrentLineNumber() + 1);
+
+			while (m.find()) {
+				String matchedPart = null;
+				if (m.groupCount() < 1) {
+					matchedPart = m.group();
+				} else {
+					matchedPart = m.group(1);
 				}
-				searchFromSearchCache();
+				SearchResult result = new SearchResult(line, matchedPart, reader.getCurrentLineNumber());
+				this.callback.call(result);
 				count++;
 			}
 
-			/*
-			 * while (reader.backBufferLineNumber > 0) { result =
-			 * searchFromSearchCache(); if (!result.equals("")) { return; } }
-			 */
-
-			String line = null;
-
-			mainLoop: while (count != amount) {
-				line = this.reader.getReader().readLine();
-				if (line == null) {
-					reader.setHasLines(false);
-					break mainLoop;
-				}
-
-				reader.getSearchCache().add(line);
-				Matcher m = this.pattern.matcher(line);
-
-				reader.setCurrentLineNumber(reader.getCurrentLineNumber() + 1);
-
-				while (m.find()) {
-					String matchedPart = null;
-					if (m.groupCount() < 1) {
-						matchedPart = m.group();
-					} else {
-						matchedPart = m.group(1);
-					}
-					SearchResult result = new SearchResult(line, matchedPart, reader.getCurrentLineNumber());
-					this.callback.call(result);
-					count++;
-				}
-
-			}
-
-			/*
-			 * mainLoop: while ((line = this.reader.getReader().readLine()) !=
-			 * null) { reader.getSearchCache().add(line); Matcher m =
-			 * this.pattern.matcher(line);
-			 * 
-			 * reader.currentLineNumber++;
-			 * 
-			 * while (m.find()) { result = m.group(); break mainLoop; }
-			 * 
-			 * }
-			 */
-
-			if (line == null) {
-				reader.setHasLines(false);
-				this.callback.call(null); //this will return null at the end of every search. This will notify it is the end of search
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			/*
-			 * if (reader.getHasLines()) {
-			 * this.callback.call(this.reader.getFileName(),
-			 * reader.currentLineNumber, result); } else {
-			 * 
-			 * 
-			 * }
-			 */
 		}
+
+		/*
+		 * mainLoop: while ((line = this.reader.getReader().readLine()) !=
+		 * null) { reader.getSearchCache().add(line); Matcher m =
+		 * this.pattern.matcher(line);
+		 * 
+		 * reader.currentLineNumber++;
+		 * 
+		 * while (m.find()) { result = m.group(); break mainLoop; }
+		 * 
+		 * }
+		 */
+
+		if (line == null) {
+			reader.setHasLines(false);
+			this.callback.call(null); // this will return null at the end of every search. This will notify it is the end of search
+		}
+
 	}
 
 	/**
 	 * Search from the search cache.
 	 */
 	private void searchFromSearchCache() {
-		if (reader.getBackBufferLineNumber() < 0)
-			throw new RuntimeException("At end of queue. Need to start searching from fresh.");
+		if (reader.getBackBufferLineNumber() < 0) {
+			RuntimeException rte = new RuntimeException("At end of queue. Need to start searching from fresh.");
+			LogTool.error("At end of queue. Need to start searching from fresh.", rte);
+			throw rte;
+		}
 
 		String line = reader.getSearchCache().getFromEnd(reader.getBackBufferLineNumber());
 		reader.setBackBufferLineNumber(reader.getBackBufferLineNumber() - 1);

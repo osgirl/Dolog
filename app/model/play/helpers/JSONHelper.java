@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.dolan.tools.LogTool;
+
 import play.libs.Json;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -58,8 +60,11 @@ public class JSONHelper {
 	 * @return the map
 	 */
 	public static Map<String, String> generateJSONMap(String[] keys, String[] values) {
-		if (keys.length != values.length)
-			throw new RuntimeException("Keys and values mismatch");
+		if (keys.length != values.length) {
+			RuntimeException keysException = new RuntimeException("Keys and values mismatch");
+			LogTool.error("Keys and values mismatch", keysException);
+			throw keysException;
+		}
 
 		Map<String, String> map = new HashMap<String, String>();
 

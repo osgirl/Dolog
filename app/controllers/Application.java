@@ -18,7 +18,7 @@ import org.dolan.datastructures.IProcessedFile;
 import org.dolan.merger.Merger;
 import org.dolan.remoteaccess.ISFTPManager;
 import org.dolan.remoteaccess.SFTPManager;
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 import org.dolan.ziptools.ZipTool;
 
 import play.Routes;
@@ -73,7 +73,7 @@ public class Application extends Controller {
 			} else {
 				fileWrapper = new UploadedFile(file, fileName);
 			}
-			Logger.log("ADDING FILE TO CACHE", fileWrapper.getName());
+			LogTool.log("ADDING FILE TO CACHE", fileWrapper.getName());
 			ObjectNode result = SessionManager.addFile(fileWrapper);
 
 			return ok(result);

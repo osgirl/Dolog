@@ -7,6 +7,8 @@ import java.io.FileReader;
 import java.util.Arrays;
 import java.util.List;
 
+import org.dolan.tools.LogTool;
+
 /**
  * The Class UploadedFile.
  * A file which is uploaded onto the application. This is a physical file and will have data, and stored in the Play Framework cache.
@@ -38,7 +40,7 @@ public class UploadedFile extends BaseFile implements IFileWrapper {
 			br = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LogTool.error("Could not get the physical file from the disk", e);
 		}
 		return Arrays.asList(br);
 	}

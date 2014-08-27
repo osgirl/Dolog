@@ -3,6 +3,8 @@ package org.dolan.datastructures;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dolan.tools.LogTool;
+
 /**
  * The Class ThreadBlock.
  * An implementation of IThreadBlock
@@ -47,8 +49,10 @@ public class ThreadBlock implements IThreadBlock {
 	 */
 	@Override
 	public boolean addLine(ILine line) {
-		if (line == null)
-			throw new NullPointerException("Expected line to be inserted, but got none.");
+		if (line == null) {
+			IllegalArgumentException iae = new IllegalArgumentException("Expected line to be inserted, but got none.");
+			LogTool.error("Expected line to be inserted, but got none.", iae);
+		}
 		lines.add(line);
 		return true;
 	}

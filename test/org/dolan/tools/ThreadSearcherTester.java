@@ -47,7 +47,7 @@ public class ThreadSearcherTester {
 
 		findAllBlocksThread.join();
 
-		Logger.writeThreadBlocksToFile("C:\\Users\\Dolan.Miu\\Desktop\\outputStuff.txt", threadBlocks);
+		LogTool.writeThreadBlocksToFile("C:\\Users\\Dolan.Miu\\Desktop\\outputStuff.txt", threadBlocks);
 		assertEquals(12, threadBlocks.size());
 
 		System.out.println("testIfSearchesThreadForGivenOrderID Test Finish...");
