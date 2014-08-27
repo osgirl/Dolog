@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.dolan.datastructures.IThreadBlock;
 import org.dolan.tools.IDebenhamsAPISearcher;
-import org.dolan.tools.Logger;
+import org.dolan.tools.LogTool;
 import org.dolan.tools.DebenhamsAPISearcher;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class SandBoxTests {
 			e.printStackTrace();
 		}
 
-		Logger.writeThreadBlocksToFile("C:\\Users\\Dolan.Miu\\Desktop\\Jiras\\DEBAPIS-157\\outputServer1blah.txt", threadBlocks);
+		LogTool.writeThreadBlocksToFile("C:\\Users\\Dolan.Miu\\Desktop\\Jiras\\DEBAPIS-157\\outputServer1blah.txt", threadBlocks);
 		assertEquals(12, threadBlocks.size());
 	}
 
@@ -66,7 +66,7 @@ public class SandBoxTests {
 			e.printStackTrace();
 		}
 
-		Logger.writeThreadBlocksToFile("C:\\Users\\Dolan.Miu\\Desktop\\ramesan\\outputServer1.txt", threadBlocks);
+		LogTool.writeThreadBlocksToFile("C:\\Users\\Dolan.Miu\\Desktop\\ramesan\\outputServer1.txt", threadBlocks);
 		assertEquals(12, threadBlocks.size());
 	}
 
