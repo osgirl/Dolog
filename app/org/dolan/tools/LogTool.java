@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.dolan.datastructures.IThreadBlock;
 
+import play.Logger;
+
 /**
  * The Class Logger.
  * This class handles all the logging.
@@ -15,8 +17,8 @@ import org.dolan.datastructures.IThreadBlock;
  * This allows easy on/off of logging.
  * This class also handles writing logs and files to disk. Some are depreciated.
  */
-public class Logger {
-
+public class LogTool {
+	
 	/**
 	 * Write thread blocks to file.
 	 *
@@ -65,7 +67,7 @@ public class Logger {
 
 			bw.close();
 
-			Logger.log("WRITTEN FILE TO DISK");
+			LogTool.log("WRITTEN FILE TO DISK");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -87,7 +89,8 @@ public class Logger {
 	 * @param data the data of the log
 	 */
 	public static void log(String heading, Object data) {
-		System.out.println(heading.toUpperCase() + ":\n\t" + data);
+		Logger.info(heading.toUpperCase() + ": " + data);
+		//System.out.println(heading.toUpperCase() + ":\n\t" + data);
 	}
 	
 	/**
@@ -96,7 +99,12 @@ public class Logger {
 	 * @param heading the text to log
 	 */
 	public static void log(String heading) {
-		System.out.println(heading.toUpperCase() + "...");
+		if (heading == null) {
+			Logger.warn("null is trying to be logged");
+			return;
+		}
+		Logger.info(heading.toUpperCase());
+		//System.out.println(heading.toUpperCase() + "...");
 	}
 	
 	/**
@@ -105,6 +113,11 @@ public class Logger {
 	 * @param obj the object
 	 */
 	public static void log(Object obj) {
-		System.out.println(obj);
+		Logger.info(obj.toString());
+		//System.out.println(obj);
+	}
+	
+	public static void error(String text, Throwable t) {
+		Logger.error(text, t);
 	}
 }
