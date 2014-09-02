@@ -11,22 +11,10 @@ import org.dolan.callbacks.ICallback;
  * It is used to search a file from bottom to top.
  * It is ran in an ISearcher.
  */
-public class AsyncSearchUp implements Runnable {
-
-	/** The reader. */
-	private IFileReaderContainer reader;
-	
-	/** The pattern. */
-	private Pattern pattern;
-	
-	/** The callback. */
-	private ICallback callback;
-	
-	/** The amount. */
-	private int amount;
+class AsyncSearchUp extends AsyncSearch implements Runnable {
 
 	/**
-	 * Instantiates a new async search up.
+	 * Instantiates a new asynchronous bottom to top searcher.
 	 *
 	 * @param reader the reader
 	 * @param pattern the pattern
@@ -34,10 +22,7 @@ public class AsyncSearchUp implements Runnable {
 	 * @param amount the amount
 	 */
 	public AsyncSearchUp(IFileReaderContainer reader, Pattern pattern, ICallback callback, int amount) {
-		this.reader = reader;
-		this.pattern = pattern;
-		this.callback = callback;
-		this.amount = amount;
+		super(reader, pattern, callback, amount);
 	}
 
 	/* (non-Javadoc)
@@ -47,17 +32,17 @@ public class AsyncSearchUp implements Runnable {
 	public void run() {
 		int count = 0;
 
-		ListIterator<String> li = reader.getSearchCache().getListIterator();
+		ListIterator<String> li = this.reader.getSearchCache().getListIterator();
 
-		mainLoop: while (count != amount) {
+		mainLoop: while (count != this.amount) {
 			if (!li.hasPrevious())
 				break mainLoop;
 			String line = li.previous();
 
 			Matcher m = this.pattern.matcher(line);
 
-			reader.setCurrentLineNumber(reader.getCurrentLineNumber() - 1);
-			reader.setBackBufferLineNumber(reader.getBackBufferLineNumber() + 1);
+			this.reader.setCurrentLineNumber(this.reader.getCurrentLineNumber() - 1);
+			this.reader.setBackBufferLineNumber(this.reader.getBackBufferLineNumber() + 1);
 
 			while (m.find()) {
 				String matchedPart = null;
@@ -66,7 +51,7 @@ public class AsyncSearchUp implements Runnable {
 				} else {
 					matchedPart = m.group(1);
 				}
-				SearchResult result = new SearchResult(line, matchedPart, reader.getCurrentLineNumber());
+				SearchResult result = new SearchResult(line, matchedPart, this.reader.getCurrentLineNumber());
 				this.callback.call(result);
 				count++;
 			}

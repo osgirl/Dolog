@@ -13,20 +13,7 @@ import org.dolan.tools.LogTool;
  * Specifically, it will be ran by the ISearcher.
  * It is used to search a file from top to bottom.
  */
-class AsyncSearchDown implements Runnable {
-
-	/** The reader. */
-	private IFileReaderContainer reader;
-
-	/** The callback. */
-	private ICallback callback;
-
-	/** The search pattern. */
-	private Pattern pattern;
-
-	/** The amount of lines to search before stopping. */
-	private int amount;
-
+class AsyncSearchDown extends AsyncSearch implements Runnable {
 	/**
 	 * Instantiates a new top to bottom searcher.
 	 *
@@ -36,10 +23,7 @@ class AsyncSearchDown implements Runnable {
 	 * @param amount the amount
 	 */
 	public AsyncSearchDown(IFileReaderContainer reader, Pattern pattern, ICallback callback, int amount) {
-		this.reader = reader;
-		this.callback = callback;
-		this.pattern = pattern;
-		this.amount = amount;
+		super(reader, pattern, callback, amount);
 	}
 
 	/* (non-Javadoc)
@@ -49,18 +33,13 @@ class AsyncSearchDown implements Runnable {
 	public void run() {
 
 		int count = 0;
-		while (count != amount) {
-			if (reader.getBackBufferLineNumber() == 0) {
+		while (count != this.amount) {
+			if (this.reader.getBackBufferLineNumber() == 0) {
 				break;
 			}
 			searchFromSearchCache();
 			count++;
 		}
-
-		/*
-		 * while (reader.backBufferLineNumber > 0) { result =
-		 * searchFromSearchCache(); if (!result.equals("")) { return; } }
-		 */
 
 		String line = null;
 
@@ -71,14 +50,14 @@ class AsyncSearchDown implements Runnable {
 				LogTool.error("Cannot read line from reader.", e);
 			}
 			if (line == null) {
-				reader.setHasLines(false);
+				this.reader.setHasLines(false);
 				break mainLoop;
 			}
 
-			reader.getSearchCache().add(line);
+			this.reader.getSearchCache().add(line);
 			Matcher m = this.pattern.matcher(line);
 
-			reader.setCurrentLineNumber(reader.getCurrentLineNumber() + 1);
+			this.reader.setCurrentLineNumber(reader.getCurrentLineNumber() + 1);
 
 			while (m.find()) {
 				String matchedPart = null;
@@ -87,27 +66,14 @@ class AsyncSearchDown implements Runnable {
 				} else {
 					matchedPart = m.group(1);
 				}
-				SearchResult result = new SearchResult(line, matchedPart, reader.getCurrentLineNumber());
+				SearchResult result = new SearchResult(line, matchedPart, this.reader.getCurrentLineNumber());
 				this.callback.call(result);
 				count++;
 			}
-
 		}
 
-		/*
-		 * mainLoop: while ((line = this.reader.getReader().readLine()) !=
-		 * null) { reader.getSearchCache().add(line); Matcher m =
-		 * this.pattern.matcher(line);
-		 * 
-		 * reader.currentLineNumber++;
-		 * 
-		 * while (m.find()) { result = m.group(); break mainLoop; }
-		 * 
-		 * }
-		 */
-
 		if (line == null) {
-			reader.setHasLines(false);
+			this.reader.setHasLines(false);
 			this.callback.call(null); // this will return null at the end of every search. This will notify it is the end of search
 		}
 
@@ -117,14 +83,14 @@ class AsyncSearchDown implements Runnable {
 	 * Search from the search cache.
 	 */
 	private void searchFromSearchCache() {
-		if (reader.getBackBufferLineNumber() < 0) {
+		if (this.reader.getBackBufferLineNumber() < 0) {
 			RuntimeException rte = new RuntimeException("At end of queue. Need to start searching from fresh.");
 			LogTool.error("At end of queue. Need to start searching from fresh.", rte);
 			throw rte;
 		}
 
-		String line = reader.getSearchCache().getFromEnd(reader.getBackBufferLineNumber());
-		reader.setBackBufferLineNumber(reader.getBackBufferLineNumber() - 1);
+		String line = this.reader.getSearchCache().getFromEnd(this.reader.getBackBufferLineNumber());
+		this.reader.setBackBufferLineNumber(this.reader.getBackBufferLineNumber() - 1);
 		Matcher m = this.pattern.matcher(line);
 
 		while (m.find()) {
@@ -134,7 +100,7 @@ class AsyncSearchDown implements Runnable {
 			} else {
 				matchedPart = m.group(1);
 			}
-			SearchResult sResult = new SearchResult(line, matchedPart, reader.getCurrentLineNumber());
+			SearchResult sResult = new SearchResult(line, matchedPart, this.reader.getCurrentLineNumber());
 			this.callback.call(sResult);
 		}
 	}
