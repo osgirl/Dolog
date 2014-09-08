@@ -179,7 +179,7 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 */
 	private void throwBufferedReaderNotReadyException() throws IOException {
 		IOException ioe = new IOException("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server");
-		LogTool.error("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server", ioe);
+		LogTool.errorC(this.getClass(), "BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server", ioe);
 		throw ioe;
 	}
 
