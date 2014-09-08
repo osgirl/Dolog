@@ -1,5 +1,6 @@
 package org.dolan.datastructures;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +32,11 @@ public class Line implements ILine {
 	 * @param lineNumber the line number
 	 */
 	public Line(String raw, int lineNumber) {
+		LogTool.traceC(this.getClass(), "Creating Line object");
+		Objects.requireNonNull(raw);
+		if (lineNumber < 0) {
+			throw new IllegalArgumentException("Cannot have a negative line number");
+		}
 		this.raw = raw;
 		this.threadNo = findThreadNo(raw);
 		this.timeStamp = getTime(raw);
@@ -44,12 +50,14 @@ public class Line implements ILine {
 	 * @return the int
 	 */
 	private int findThreadNo(String line) {
+		LogTool.traceC(this.getClass(), "Finding thread number of line", line);
 		Pattern p = Pattern.compile("http-executor-threads - (\\d+)");
 		Matcher m = p.matcher(line);
 
 		if (m.find()) {
 			try {
 				int value = Integer.parseInt(m.group(1));
+				LogTool.traceC(this.getClass(), "Thread number is", value);
 				return value;
 			} catch (NumberFormatException nfe) {
 				LogTool.error("The thread number found is not an integer,  something wrong is happening", nfe);
@@ -67,6 +75,7 @@ public class Line implements ILine {
 	 * @return the time
 	 */
 	private TimeStamp getTime(String line) {
+		LogTool.traceC(this.getClass(), "Finding time from line", line);
 		Pattern p = Pattern.compile("(\\d+):(\\d+):(\\d+),(\\d+)");
 		Matcher m = p.matcher(line);
 
@@ -83,6 +92,7 @@ public class Line implements ILine {
 				 * format.parse(m.group(1)); } catch (ParseException e) { //
 				 * TODO Auto-generated catch block e.printStackTrace(); }
 				 */
+				LogTool.traceC(this.getClass(), "Line has a time of", time);
 				return time;
 			} catch (NumberFormatException nfe) {
 				LogTool.error("The time stamp cannot be parsed.", nfe);

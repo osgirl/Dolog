@@ -1,8 +1,10 @@
 package model.play.helpers;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
+import org.dolan.tools.LogTool;
 
 /**
  * The Class BaseFile.
@@ -27,6 +29,11 @@ public abstract class BaseFile implements IFileWrapper {
 	 * @param name the name
 	 */
 	public BaseFile(String name) {
+		Objects.requireNonNull(name, "Name cannot be null");
+		if (name.isEmpty()) {
+			throw new IllegalArgumentException("Name cannot be blank");
+		}
+		LogTool.traceC(this.getClass(), "Creating File", name);
 		this.name = name;
 		this.fileType = FilenameUtils.getExtension(name);
 		this.id = generateID();

@@ -23,6 +23,8 @@ public class SearchCacheFilter {
 	 * @return the list
 	 */
 	public static List<String> filter(ISearchCache<String> lines, String regexExpression, String terminatingExpression) {
+		LogTool.trace("Begin filtering lines from line cache", lines);
+		LogTool.trace("Using regex expression", regexExpression);
 		List<String> filteredLines = new ArrayList<String>();
 
 		for (int i = lines.size() - 1; i > 0; i--) {
@@ -40,6 +42,7 @@ public class SearchCacheFilter {
 			}
 		}
 		Collections.reverse(filteredLines);
+		LogTool.trace("Finished filtering lines", filteredLines);
 		return filteredLines;
 	}
 }

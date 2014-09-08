@@ -3,6 +3,7 @@ package org.dolan.searcher;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class SearcherTester {
 	public static ISearcher searcher;
 
 	@BeforeClass
-	public static void setUpSearcher() {
+	public static void setUpSearcher() throws IOException {
 		searcher = new Searcher(200);
 		searcher.setFile("C:\\log.txt");
 	}
@@ -29,7 +30,7 @@ public class SearcherTester {
 	}
 
 	@Test
-	public void testIfSeachCanScanUp() throws InterruptedException {
+	public void testIfSeachCanScanUp() throws InterruptedException, IOException {
 		ISearcher searcher = new Searcher(200);
 		searcher.setFile("C:\\log.txt");
 		String[] results = new String[2];
@@ -50,7 +51,7 @@ public class SearcherTester {
 	}
 
 	@Test
-	public void testIfSeachCanScanDown() throws InterruptedException {
+	public void testIfSeachCanScanDown() throws InterruptedException, IOException {
 		ISearcher searcher = new Searcher(200);
 		searcher.setFile("C:\\log.txt");
 		String[] results = new String[1];
@@ -65,7 +66,7 @@ public class SearcherTester {
 	}
 
 	@Test
-	public void testIfCanDoFullTextSearch() throws InterruptedException {
+	public void testIfCanDoFullTextSearch() throws InterruptedException, IOException {
 		ISearcher searcher = new Searcher(200);
 		searcher.setFile("C:\\log.txt");
 
@@ -99,7 +100,7 @@ public class SearcherTester {
 	}
 	
 	@Test
-	public void testIfCanStoreSearchResults() throws InterruptedException {
+	public void testIfCanStoreSearchResults() throws InterruptedException, IOException {
 		ISearcher searcher = new Searcher(200);
 		searcher.setFile("C:\\log.txt");
 
@@ -133,7 +134,7 @@ public class SearcherTester {
 	}
 
 	@Test
-	public void testIfCanReturn3ResultsFromSearch() throws InterruptedException {
+	public void testIfCanReturn3ResultsFromSearch() throws InterruptedException, IOException {
 		ISearcher searcher = new Searcher(200);
 		searcher.setFile("C:\\log.txt");
 

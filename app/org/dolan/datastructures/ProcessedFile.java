@@ -2,6 +2,9 @@ package org.dolan.datastructures;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import org.dolan.tools.LogTool;
 
 /**
  * The Class ProcessedFile.
@@ -23,6 +26,7 @@ public class ProcessedFile implements IProcessedFile {
 	 * Instantiates a new processed file.
 	 */
 	public ProcessedFile() {
+		LogTool.traceC(this.getClass(), "Creating processed file");
 		threadBlocks = new ArrayList<IThreadBlock>();
 		lineCount = 0;
 	}
@@ -40,9 +44,15 @@ public class ProcessedFile implements IProcessedFile {
 	 */
 	@Override
 	public void append(List<IThreadBlock> tb) {
+		LogTool.traceC(this.getClass(), "Begin appending Thread Blocks to file");
+		Objects.requireNonNull(tb);
 		for (IThreadBlock threadBlock : tb) {
-			if (threadBlock.getSize() > 0) 
+			if (threadBlock.getSize() > 0) {
+				LogTool.traceC(this.getClass(), "Adding Thread Block to file", threadBlock);
 				this.threadBlocks.add(threadBlock);
+			} else {
+				LogTool.warnC(this.getClass(), "Trying to add zero sized Thread Block to file. It has been skipped", threadBlock);
+			}
 		}
 		
 	}
@@ -52,7 +62,9 @@ public class ProcessedFile implements IProcessedFile {
 	 */
 	@Override
 	public ILine getNextLine() {
+		LogTool.traceC(this.getClass(), "Getting next line");
 		if (this.threadBlocks.size() == 0) {
+			LogTool.warnC(this.getClass(), "There are no Thread Blocks in file. Thus no next line", this.threadBlocks);
 			return null;
 		}
 		
@@ -62,10 +74,12 @@ public class ProcessedFile implements IProcessedFile {
 		}
 
 		if (threadBlockCount > this.threadBlocks.size() - 1) {
+			LogTool.traceC(this.getClass(), "Reached to the end of the file. Thread Block counter is at: " + threadBlockCount + ", and Total Thread Blocks is: " + this.threadBlocks.size());
 			return null;
 		}
 
 		ILine line = this.threadBlocks.get(threadBlockCount).getLines().get(lineCount);
+		LogTool.traceC(this.getClass(), "Got next line", line);
 		lineCount++;
 		return line;
 	}
@@ -75,6 +89,11 @@ public class ProcessedFile implements IProcessedFile {
 	 */
 	@Override
 	public ILine getLine(int number) {
+		LogTool.traceC(this.getClass(), "Getting line from line number", number);
+		if (number < 0) {
+			throw new IllegalArgumentException("Cant have a negative line number");
+		}
+		
 		IThreadBlock currentThreadBlock = null;
 		int currentSum = 0;
 		for (IThreadBlock block : this.threadBlocks) {
@@ -94,6 +113,7 @@ public class ProcessedFile implements IProcessedFile {
 	 */
 	@Override
 	public void resetStream() {
+		LogTool.traceC(this.getClass(), "Resetting line stream");
 		this.lineCount = 0;
 		this.threadBlockCount = 0;
 	}

@@ -2,6 +2,7 @@ package org.dolan.datastructures;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.dolan.tools.LogTool;
 
@@ -23,6 +24,7 @@ public class ThreadBlock implements IThreadBlock {
 	 * Instantiates a new thread block.
 	 */
 	public ThreadBlock() {
+		LogTool.traceC(this.getClass(), "Creating threadblock");
 		lines = new ArrayList<ILine>();
 	}
 
@@ -31,16 +33,26 @@ public class ThreadBlock implements IThreadBlock {
 	 */
 	@Override
 	public boolean addLine(String lineString, int lineNumber) {
+		LogTool.traceC(this.getClass(), "Begin adding line");
+		Objects.requireNonNull(lineString, "Line string is null");
+		if (lineNumber < 0) {
+			throw new IllegalArgumentException("Line number cannot be negative");
+		}
+		
 		ILine line = new Line(lineString, lineNumber);
 		if (threadNumber == -1) { // No thread number set
+			LogTool.traceC(this.getClass(), "No thread number set. Setting thread number for thread block");
 			threadNumber = line.getThreadNumber();
 		} else {
+			LogTool.traceC(this.getClass(), "Thread number set. Checking if line is of same thread number as the thread block");
 			if (line.getThreadNumber() != threadNumber) {
+				LogTool.traceC(this.getClass(), "It is a different thread number. Didn't add line. Returning.");
 				return false;
 			}
 		}
-
+		LogTool.traceC(this.getClass(), "Adding line to thread block");
 		lines.add(line);
+		LogTool.traceC(this.getClass(), "Finish add line");
 		return true;
 	}
 
@@ -49,11 +61,10 @@ public class ThreadBlock implements IThreadBlock {
 	 */
 	@Override
 	public boolean addLine(ILine line) {
-		if (line == null) {
-			IllegalArgumentException iae = new IllegalArgumentException("Expected line to be inserted, but got none.");
-			LogTool.error("Expected line to be inserted, but got none.", iae);
-		}
+		LogTool.traceC(this.getClass(), "Begin adding line");
+		Objects.requireNonNull(line, "Trying to add a null ILine object");
 		lines.add(line);
+		LogTool.traceC(this.getClass(), "Finish adding line");
 		return true;
 	}
 

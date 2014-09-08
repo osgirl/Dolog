@@ -1,10 +1,10 @@
 package controllers;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import model.play.helpers.IFileWrapper;
 
@@ -29,36 +29,36 @@ public class DebenhamsAPIHelper {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static IProcessedFile processFile(IFileWrapper file, int orderID) throws IOException, InterruptedException {
-		if (file == null) {
-			IllegalArgumentException iae = new IllegalArgumentException("No file specified.");
-			LogTool.error("No file specified.", iae);
-			throw iae;
-		}
+		Objects.requireNonNull(file, "No file specified");
+		LogTool.trace("Begin processing file", file);
 		
-		LogTool.log("UPLOADED FILE TO BE PROCESSED", file.getName());
+		LogTool.log("Uploaded file to be processed", file.getName());
 		ArrayList<IProcessedFile> processedFiles = new ArrayList<IProcessedFile>();
 		
 		for(BufferedReader reader : file.getBufferedReaders()) {
 			processedFiles.add(searchBufferedReader(reader, orderID));
 		}
 
-		LogTool.log("MERGING FILES IN SAME ZIP TOGETHER");
+		LogTool.trace("Merging files in same ZIP together");
 		IProcessedFile processedFile = Merger.merge(processedFiles);
+		LogTool.trace("Finish processing file");
 		return processedFile;
 	}
 	
 	private static IProcessedFile searchBufferedReader(BufferedReader reader, int orderID) throws IOException, InterruptedException {
+		LogTool.trace("Searching buffered reader for orderID", orderID);
 		IDebenhamsAPISearcher searcher = new DebenhamsAPISearcher(reader);
 		IProcessedFile processedFile = new ProcessedFile();
 
 		Thread findAllBlocksThread = searcher.asyncGetThreadBlocksWhichContain(orderID, (List<IThreadBlock> blocks) -> {
 			if (blocks.size() > 0) {
-				LogTool.log("FOUND SEARCHED DATA ADDING THEM TO LIST");
+				LogTool.trace("Found search data and adding to list", blocks);
 				processedFile.append(blocks);
 			}
 		});
 
 		findAllBlocksThread.join();
+		LogTool.trace("Finished searching current buffered reader");
 		return processedFile;
 	}
 
@@ -72,10 +72,13 @@ public class DebenhamsAPIHelper {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static IProcessedFile processFiles(List<IFileWrapper> files, Integer orderID) throws IOException, InterruptedException {
-		List<IProcessedFile> processedFiles = new ArrayList<IProcessedFile>();
-		if (files.size() == 0) {
+		if (files.isEmpty()) {
+			LogTool.trace("No files passed");
 			return null;
 		}
+		LogTool.trace("Processing files", files);
+		List<IProcessedFile> processedFiles = new ArrayList<IProcessedFile>();
+		
 		for (IFileWrapper file : files) {
 			if (file == null) {
 				IllegalArgumentException iae = new IllegalArgumentException("One of the files doesn't exist for some reason.");
@@ -85,7 +88,7 @@ public class DebenhamsAPIHelper {
 			processedFiles.add(processFile(file, orderID));
 		}
 
-		LogTool.log("MERGING FILES TOGETHER");
+		LogTool.trace("Merging files together");
 		IProcessedFile processedFile = Merger.merge(processedFiles);
 		return processedFile;
 	}

@@ -2,7 +2,6 @@ package org.dolan.searcher;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -25,6 +24,11 @@ public class Searcher implements ISearcher {
 	 * @param cacheSize the cache size
 	 */
 	public Searcher(int cacheSize) {
+		LogTool.traceC(this.getClass(), "Creating Searcher");
+		if (cacheSize <= 0) {
+			throw new IllegalArgumentException("cache size cannot be zero or a negative number");
+		}
+
 		reader = new FileReaderContainer();
 		reader.setSearchCache(new SearchCache(cacheSize));
 	}
@@ -32,13 +36,9 @@ public class Searcher implements ISearcher {
 	/* (non-Javadoc)
 	 * @see org.dolan.searcher.ISearcher#setFile(java.io.File)
 	 */
-	public void setFile(File file) throws IOException, FileNotFoundException {
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		if (!br.ready()) {
-			throwBufferedReaderNotReadyException();
-		}
-		reader.setReader(br);
-		reader.setFileName(file.getAbsolutePath());
+	public void setFile(File file) throws IOException {
+		LogTool.traceC(this.getClass(), "Setting file", file);
+		setFile(new FileReader(file), file.getAbsolutePath());
 	}
 
 	/* (non-Javadoc)
@@ -46,8 +46,11 @@ public class Searcher implements ISearcher {
 	 */
 	@Override
 	public void setFile(BufferedReader br) throws IOException {
+		LogTool.traceC(this.getClass(), "Setting file with buffered reader", br);
 		if (!br.ready()) {
-			throwBufferedReaderNotReadyException();
+			IOException ioe = new IOException("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server");
+			LogTool.error("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server", ioe);
+			throw ioe;
 		}
 		reader.setReader(br);
 	}
@@ -56,14 +59,16 @@ public class Searcher implements ISearcher {
 	 * @see org.dolan.searcher.ISearcher#setFile(java.lang.String)
 	 */
 	@Override
-	public void setFile(String filePath) {
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(filePath));
-			reader.setReader(br);
-			reader.setFileName(filePath);
-		} catch (FileNotFoundException e) {
-			LogTool.error("The file cannot be found in the specified path", e);
-		}
+	public void setFile(String filePath) throws IOException {
+		LogTool.traceC(this.getClass(), "Setting file with file path", filePath);
+		setFile(new FileReader(filePath), filePath);
+	}
+
+	private void setFile(FileReader fr, String filePath) throws IOException {
+		LogTool.traceC(this.getClass(), "Setting file with file reader", fr);
+		BufferedReader br = new BufferedReader(fr);
+		setFile(br);
+		reader.setFileName(filePath);
 	}
 
 	/* (non-Javadoc)
@@ -71,10 +76,11 @@ public class Searcher implements ISearcher {
 	 */
 	@Override
 	public Thread scanDown(String query, int amount, ICallback callback) {
+		LogTool.traceC(this.getClass(), "searching down with query", query);
 		if (reader.getReader() == null) {
-			throwFileNotSpecifiedException();
+			throw new IllegalStateException("Have to specify a file before searching");
 		}
-		
+
 		Thread thread = new Thread(new AsyncSearchDown(reader, Pattern.compile(query), callback, amount));
 		thread.start();
 		return thread;
@@ -85,8 +91,9 @@ public class Searcher implements ISearcher {
 	 */
 	@Override
 	public Thread scanUp(String query, int amount, ICallback callback) {
+		LogTool.traceC(this.getClass(), "searching up with query", query);
 		if (reader.getReader() == null) {
-			throwFileNotSpecifiedException();
+			throw new IllegalStateException("Have to specify a file before searching");
 		}
 		Thread thread = new Thread(new AsyncSearchUp(reader, Pattern.compile(query), callback, amount));
 		thread.start();
@@ -115,25 +122,5 @@ public class Searcher implements ISearcher {
 	@Override
 	public void clearCache() {
 		reader.clearSearchCache();
-	}
-	
-	/**
-	 * Throw file not specified exception.
-	 */
-	private void throwFileNotSpecifiedException() {
-		IllegalArgumentException iae = new IllegalArgumentException("Didn't specify a file!");
-		LogTool.error("Didn't specify a file!", iae);
-		throw iae;
-	}
-	
-	/**
-	 * Throw buffered reader not ready exception.
-	 *
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 */
-	private void throwBufferedReaderNotReadyException() throws IOException {
-		IOException ioe = new IOException("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server");
-		LogTool.error("BufferedReader is empty in Searcher. Maybe file is unavalible or disconnected from server", ioe);
-		throw ioe;
 	}
 }

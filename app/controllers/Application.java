@@ -60,27 +60,33 @@ public class Application extends Controller {
 	 * @return the HTTP result
 	 */
 	public static Result upload() {
+		LogTool.log("Begin uploading");
 		MultipartFormData body = request().body().asMultipartFormData();
 		FilePart rawFile = body.getFile("rawFile");
-		if (rawFile != null) {
-			String fileName = rawFile.getFilename();
-			File file = rawFile.getFile();
 
-			String fileType = FilenameUtils.getExtension(fileName);
-			IFileWrapper fileWrapper = null;
-			if (fileType.equals("zip")) {
-				fileWrapper = new UploadedZipFile(file, fileName);
-			} else {
-				fileWrapper = new UploadedFile(file, fileName);
-			}
-			LogTool.log("ADDING FILE TO CACHE", fileWrapper.getName());
-			ObjectNode result = SessionManager.addFile(fileWrapper);
-
-			return ok(result);
-		} else {
+		if (rawFile == null) {
+			LogTool.error("Upload failed");
 			flash("error", "Missing file");
-			return null;
+			return badRequest("Missing file");
 		}
+
+		String fileName = rawFile.getFilename();
+		File file = rawFile.getFile();
+
+		String fileType = FilenameUtils.getExtension(fileName);
+		LogTool.log("Uploaded file is of type", fileType);
+
+		IFileWrapper fileWrapper = null;
+		if (fileType.equals("zip")) {
+			fileWrapper = new UploadedZipFile(file, fileName);
+		} else {
+			fileWrapper = new UploadedFile(file, fileName);
+		}
+		LogTool.log("Adding uploaded file to cache", fileWrapper.getName());
+		ObjectNode result = SessionManager.addFile(fileWrapper);
+		LogTool.log("Finished uploading");
+		return ok(result);
+
 	}
 
 	/**
@@ -93,17 +99,25 @@ public class Application extends Controller {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static Result process(Integer orderID) throws IOException, InterruptedException {
-		if (orderID < 0 && orderID.toString().length() < 8) {
+		LogTool.log("Begin processing uploaded files");
+		if (!validateOrderID(orderID)) {
+			LogTool.error("Invalid order ID passed", orderID);
 			return badRequest("Invalid orderID");
 		}
+		LogTool.log("Finding uploaded files");
 		List<IFileWrapper> files = SessionManager.getFiles();
-		IProcessedFile processedFile = DebenhamsAPIHelper.processFiles(files, orderID);
-		if (processedFile == null) {
-			return ok("No files to process: " + files.toString());
-		}
-		response().setContentType("application/octet-stream");
-		return ok(Helper.createFile(processedFile));
+		LogTool.log("Searching files for orderID", files);
 
+		IProcessedFile processedFile = DebenhamsAPIHelper.processFiles(files, orderID);
+
+		if (processedFile == null) {
+			LogTool.log("Files do not contain orderID");
+			return ok("Files do not contain orderID: " + files.toString());
+		} else {
+			response().setContentType("application/octet-stream");
+			LogTool.log("Finished searching. Creating file now.");
+			return ok(Helper.createFile(processedFile));
+		}
 	}
 
 	/**
@@ -119,31 +133,50 @@ public class Application extends Controller {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static Result processServer(String fileIDStrings, Integer orderID) throws IOException, JSchException, SftpException, InterruptedException {
-		if (orderID < 0 && orderID.toString().length() < 8) {
+		LogTool.log("Begin processing API server files");
+		if (!validateOrderID(orderID)) {
+			LogTool.error("Invalid order ID passed", orderID);
 			return badRequest("Invalid orderID");
 		}
+
 		String[] fileIDs = fileIDStrings.split(",");
 		List<ServerFile> sFiles1 = sftpDebAPI1.getFiles("zip");
 		List<ServerFile> sFiles2 = sftpDebAPI2.getFiles("zip");
 		List<IProcessedFile> processedFiles = new ArrayList<IProcessedFile>();
 
 		for (String fileID : fileIDs) {
+			LogTool.log("Finding file based on fileID", fileID);
+
 			ServerFile file1 = ServerFile.findServerFileFromName(sFiles1, fileID);
+			LogTool.log("Found and will materialise", file1);
 			file1.materialise(sftpDebAPI1);
+			LogTool.log("Processing file", file1);
 			IProcessedFile pfile1 = DebenhamsAPIHelper.processFile(file1, orderID);
 
 			ServerFile file2 = ServerFile.findServerFileFromName(sFiles2, fileID);
+			LogTool.log("Found and will materialise", file2);
 			file2.materialise(sftpDebAPI2);
+			LogTool.log("Processing file", file2);
 			IProcessedFile pfile2 = DebenhamsAPIHelper.processFile(file2, orderID);
 
+			LogTool.log("Merging the 2 server files together");
 			IProcessedFile pfile = Merger.merge(pfile1, pfile2);
+			LogTool.log("Adding merged file to list of processed files");
 			processedFiles.add(pfile);
 		}
 
-		response().setContentType("application/octet-stream");
 		File outputFile = Helper.createFile(processedFiles);
-		ZipTool.closeAllZipFiles();
-		return ok(outputFile);
+		if (outputFile == null) {
+			LogTool.log("Nothing found with orderID", orderID);
+			LogTool.log("Finish processing API server files");
+			return ok("Nothing found with orderID: " + orderID);
+		} else {
+			LogTool.log("Creating downloadable file");
+			ZipTool.closeAllZipFiles();
+			LogTool.log("Finish processing API server files");
+			response().setContentType("application/octet-stream");
+			return ok(outputFile);
+		}
 	}
 
 	/**
@@ -157,12 +190,20 @@ public class Application extends Controller {
 	 * @throws InterruptedException the interrupted exception
 	 */
 	public static Result search(String query, boolean removeDuplicates, boolean appendNewLine) throws IOException, InterruptedException {
+		LogTool.log("Begin searching");
 		List<IFileWrapper> files = SessionManager.getFiles();
+		LogTool.log("Searching files", files);
+		if (files.isEmpty()) {
+			LogTool.log("No files uploaded");
+			return ok("No files uploaded");
+		}
 		String sb = SearcherHelper.search(files, query, removeDuplicates, appendNewLine);
-		if (sb == null) {
-			return badRequest("No files uploaded");
+		if (sb.isEmpty()) {
+			LogTool.log("Cannot find anything in files");
+			return ok("Cannot find anything in files");
 		}
 		response().setContentType("application/octet-stream");
+		LogTool.log("Finish searching");
 		return ok(sb);
 	}
 
@@ -172,9 +213,12 @@ public class Application extends Controller {
 	 * @return the HTTP result
 	 */
 	public static Result deleteFile() {
+		LogTool.log("Begin deleting file");
 		JsonNode node = request().body().asJson();
 		String fileID = node.path("fileID").asText();
+		LogTool.log("Deleting", fileID);
 		SessionManager.removeFile(fileID);
+		LogTool.log("Finish deleting");
 		return ok(fileID);
 	}
 
@@ -195,14 +239,17 @@ public class Application extends Controller {
 	 * @throws SftpException the sftp exception
 	 */
 	public static Result getAPIServerFiles() throws JSchException, SftpException {
+		LogTool.log("Begin retreiving server files");
 		List<ServerFile> sFiles = sftpDebAPI2.getFiles("zip");
 		JsonNode node = JSONHelper.createEmptyJsonNode();
 		JsonNode arrayNode = JSONHelper.addArrayNodeToJsonNode(node, "files");
 
+		LogTool.log("Creating JSON for the server files");
 		for (ServerFile file : sFiles) {
 			Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "name", "size", "date" }, new String[] { file.getName(), Long.toString(file.getSize()), file.getDate() });
 			JSONHelper.addMapToJsonArrayNode(arrayNode, map);
 		}
+		LogTool.log("Finish retreiving server files");
 
 		return ok(node);
 	}
@@ -215,5 +262,13 @@ public class Application extends Controller {
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
 		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Application.upload(), controllers.routes.javascript.Application.getUploadedFiles(), controllers.routes.javascript.Application.process(), controllers.routes.javascript.Application.processServer(), controllers.routes.javascript.Application.getAPIServerFiles(), controllers.routes.javascript.Application.deleteFile()));
+	}
+
+	private static boolean validateOrderID(Integer orderID) {
+		if (orderID < 0 && orderID.toString().length() < 8) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 }

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import org.dolan.datastructures.IThreadBlock;
 
@@ -48,7 +49,6 @@ public class LogTool {
 		return file;
 	}
 
-	// TODO
 	/**
 	 * Write file to disk.
 	 *
@@ -89,7 +89,7 @@ public class LogTool {
 	 * @param data the data of the log
 	 */
 	public static void log(String heading, Object data) {
-		Logger.info(heading.toUpperCase() + ": " + data);
+		Logger.info(heading.toUpperCase(), data);
 		//System.out.println(heading.toUpperCase() + ":\n\t" + data);
 	}
 	
@@ -99,10 +99,7 @@ public class LogTool {
 	 * @param heading the text to log
 	 */
 	public static void log(String heading) {
-		if (heading == null) {
-			Logger.warn("null is trying to be logged");
-			return;
-		}
+		Objects.requireNonNull(heading);
 		Logger.info(heading.toUpperCase());
 		//System.out.println(heading.toUpperCase() + "...");
 	}
@@ -114,10 +111,45 @@ public class LogTool {
 	 */
 	public static void log(Object obj) {
 		Logger.info(obj.toString());
-		//System.out.println(obj);
+	}
+	
+	public static void error(String text) {
+		Logger.error(text);
+	}
+	
+	public static void error(String text, Object o) {
+		Logger.error(text, o);
 	}
 	
 	public static void error(String text, Throwable t) {
 		Logger.error(text, t);
+	}
+	
+	public static void trace(String text) {
+		Logger.trace(text);
+	}
+	
+	public static void trace(String text, Object data) {
+		Logger.trace(text, data);
+	}
+	
+	public static void traceC(Class<?> obj, String text, Object data) {
+		Logger.ALogger logger = Logger.of(obj);
+		logger.trace(text, data);
+	}
+	
+	public static void traceC(Class<?> obj, String text) {
+		Logger.ALogger logger = Logger.of(obj);
+		logger.trace(text);
+	}
+	
+	public static void warnC(Class<?> obj, String text, Object data) {
+		Logger.ALogger logger = Logger.of(obj);
+		logger.warn(text, data);
+	}
+	
+	public static void errorC(Class<?> obj, String text, Object data) {
+		Logger.ALogger logger = Logger.of(obj);
+		logger.error(text, data);
 	}
 }

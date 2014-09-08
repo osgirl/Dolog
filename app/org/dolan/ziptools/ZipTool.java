@@ -36,6 +36,7 @@ public class ZipTool {
 	 */
 	@SuppressWarnings("resource")
 	public static List<BufferedReader> getBufferedReadersFromZip(File file) throws IOException {
+		LogTool.trace("Begin getting buffered readers from file", file);
 		List<BufferedReader> bufferedReaders = new ArrayList<BufferedReader>();
 		ZipFile zf = new ZipFile(file);
 		Enumeration<? extends ZipEntry> entries = zf.entries();
@@ -45,20 +46,22 @@ public class ZipTool {
 
 			long size = ze.getSize();
 			if (size > 0) {
-				LogTool.log("NAME AND SIZE OF ZIP FILE ENTRY", ze.getName() + ", " + size);
+				LogTool.log("Name and file size of entry", ze.getName() + ", " + size);
 				BufferedReader br = new BufferedReader(new InputStreamReader(zf.getInputStream(ze)));
 				bufferedReaders.add(br);
 			} else {
-				LogTool.log("FILE IN ZIP IS SIZE ZERO. WON'T BE RETURNING READER", ze.getName());
+				LogTool.trace("file is of size zero. Won't be returning this buffered reader", ze.getName());
 			}
 		}
 
 		if (bufferedReaders.size() == 0) {
-			NullPointerException npe = new NullPointerException("Cannot load files. No files in zip file");
-			LogTool.error("Cannot load files. No files in zip file", npe);
+			IllegalArgumentException iae = new IllegalArgumentException("Cannot load files. No files in zip file");
+			LogTool.error("Cannot load files. No files in zip file", iae);
+			throw iae;
 		}
 
 		checkIfReadersAreEmpty(bufferedReaders);
+		LogTool.trace("Finish getting buffered readers from file");
 		return bufferedReaders;
 	}
 
@@ -83,7 +86,7 @@ public class ZipTool {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static File writeZip(String fileName, List<String> data) throws IOException {
-		LogTool.log("CREATING ZIP FILE", fileName);
+		LogTool.log("Begin creating zip file", fileName);
 		Map<String, String> entries = new HashMap<String, String>();
 		for (int i = 0; i < data.size(); i++) {
 			entries.put(data.get(i), "output (" + i + ").txt");
@@ -121,11 +124,13 @@ public class ZipTool {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private static void checkIfReadersAreEmpty(List<BufferedReader> bufferedReaders) throws IOException {
+		LogTool.trace("Begin checking if readers are empty");
 		boolean error = false;
 		List<Integer> badReaders = new ArrayList<Integer>();
 
 		for (int i = 0; i < bufferedReaders.size(); i++) {
 			if (!bufferedReaders.get(i).ready()) {
+				LogTool.trace("Buffered reader is not ready. Exception will be thrown", bufferedReaders.get(i));
 				badReaders.add(i);
 				error = true;
 			}
@@ -144,6 +149,7 @@ public class ZipTool {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static boolean closeAllZipFiles() throws IOException {
+		LogTool.trace("Closing all zip files");
 		if (openZipFiles.empty()) return false;
 		
 		while (!openZipFiles.empty()) {

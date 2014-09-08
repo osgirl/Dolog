@@ -35,7 +35,7 @@ public interface ISearcher {
 	 *
 	 * @param filePath the new file's file path
 	 */
-	public void setFile(String filePath);
+	public void setFile(String filePath) throws IOException;
 
 	/**
 	 * Scan down.

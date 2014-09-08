@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +36,12 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public DebenhamsAPISearcher(BufferedReader reader, int bufferSize) throws IOException {
+		LogTool.traceC(this.getClass(), "Creating API searcher");
+		Objects.requireNonNull(reader);
+		if (bufferSize <= 0) {
+			throw new IllegalArgumentException("Buffer size must be greater than 0");
+		}
+		
 		if (!reader.ready()) {
 			throwBufferedReaderNotReadyException();
 		}
@@ -65,6 +72,9 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 */
 	@Override
 	public Thread asyncFindThreadsWhichContain(String query, IThreadBlockCallback callback) throws IOException {
+		LogTool.traceC(this.getClass(), "Finding threads which contain", query);
+		Objects.requireNonNull(callback);
+		
 		List<IThreadBlock> threadBlocks = new ArrayList<IThreadBlock>();
 
 		Thread thread = searcher.scanDown(query, -1, (SearchResult result) -> {
@@ -94,6 +104,9 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 */
 	@Override
 	public Thread asyncGetSessionIDWhichContain(int orderNumber, ISessionCallback callback) throws IOException {
+		LogTool.traceC(this.getClass(), "Finding threads which contain", orderNumber);
+		Objects.requireNonNull(callback);
+		
 		List<String> sessionIDs = new ArrayList<String>();
 		Thread thread = searcher.scanDown(Integer.toString(orderNumber), -1, (SearchResult result) -> {
 			if (result == null) {
@@ -123,6 +136,8 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 * @return the list
 	 */
 	private List<String> findSessionIDFromList(List<String> lines) {
+		LogTool.traceC(this.getClass(), "Begin finding session IDs from list", lines);
+		
 		List<String> possibleSessionIDs = new ArrayList<String>();
 		for (String line : lines) {
 			Pattern r = Pattern.compile("...got existing session ([a-zA-Z0-9+]+)|...local session updated ([a-zA-Z0-9+]+)");
@@ -136,10 +151,11 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 					sessionID = m.group(1);
 				}
 				possibleSessionIDs.add(sessionID);
-				LogTool.log("FOUND SESSION ID", sessionID);
+				LogTool.traceC(this.getClass(), "Found session ID", sessionID);
 			}
 		}
-
+		
+		LogTool.traceC(this.getClass(), "Finish finding session IDs from list", possibleSessionIDs);
 		return possibleSessionIDs;
 	}
 
@@ -149,6 +165,7 @@ public class DebenhamsAPISearcher implements IDebenhamsAPISearcher {
 	 * @param list the list
 	 */
 	private void removeDuplicates(List<String> list) {
+		LogTool.traceC(this.getClass(), "Removing duplicates from list", list);
 		HashSet<String> hs = new HashSet<String>();
 		hs.addAll(list);
 		list.clear();

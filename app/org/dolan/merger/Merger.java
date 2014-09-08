@@ -25,8 +25,9 @@ public class Merger {
 	 * @return the processed file
 	 */
 	public static IProcessedFile merge(List<IProcessedFile> files) {
+		LogTool.trace("Begin merging files", files);
 		if (files.size() < 2) {
-			LogTool.log("NOTHING TO MERGE, SINGLE FILE");
+			LogTool.trace("Nothing to merge, single file");
 			return files.get(0);
 		}
 		
@@ -35,10 +36,12 @@ public class Merger {
 		IThreadBlock tb = new ThreadBlock();
 		threadBlocks.add(tb);
 		
+		LogTool.trace("Creating priority queue to merge files");
 		PriorityQueue<ILine> lineHeap = new PriorityQueue<ILine>((ILine x, ILine y) -> {
 			return x.getTimeStamp().compareTo(y.getTimeStamp());
 		});
 		
+		LogTool.trace("Going through each line and adding the next line in the priority queue");
 		for (IProcessedFile file : files) {
 			file.resetStream();
 			for (ILine line = file.getNextLine(); line != null; line = file.getNextLine()) {
@@ -46,10 +49,12 @@ public class Merger {
 			}
 		}
 		
+		LogTool.trace("Going through each line and throwing out the next line in the priority queue and adding to list");
 		while (!lineHeap.isEmpty()) {
 			tb.addLine(lineHeap.remove());
 		}
 		processedFile.append(threadBlocks);
+		LogTool.trace("Finish merging files", files);
 		return processedFile;
 	}
 	

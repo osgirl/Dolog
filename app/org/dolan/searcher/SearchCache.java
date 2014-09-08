@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.dolan.tools.LogTool;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class SearchCache.
@@ -14,7 +16,7 @@ public class SearchCache implements ISearchCache<String> {
 
 	/** The list. */
 	private List<String> list;
-	
+
 	/** The size of the search cache. */
 	private int size;
 
@@ -22,6 +24,7 @@ public class SearchCache implements ISearchCache<String> {
 	 * Instantiates a new search cache.
 	 */
 	public SearchCache() {
+		LogTool.traceC(this.getClass(), "Creating search cache");
 		this.list = new ArrayList<String>();
 	}
 
@@ -31,7 +34,10 @@ public class SearchCache implements ISearchCache<String> {
 	 * @param size the size
 	 */
 	public SearchCache(int size) {
-		this.list = new ArrayList<String>();
+		this();
+		if (size <= 0) {
+			throw new IllegalArgumentException("SearchCache size must be greater than zero");
+		}
 		this.size = size;
 	}
 

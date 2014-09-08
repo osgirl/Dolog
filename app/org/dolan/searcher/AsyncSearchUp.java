@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.dolan.callbacks.ICallback;
+import org.dolan.tools.LogTool;
 
 /**
  * The Class AsyncSearchUp.
@@ -23,6 +24,7 @@ class AsyncSearchUp extends AsyncSearch implements Runnable {
 	 */
 	public AsyncSearchUp(IFileReaderContainer reader, Pattern pattern, ICallback callback, int amount) {
 		super(reader, pattern, callback, amount);
+		LogTool.traceC(this.getClass(), "Async searcher is a bottom to top searcher");
 	}
 
 	/* (non-Javadoc)
@@ -30,15 +32,17 @@ class AsyncSearchUp extends AsyncSearch implements Runnable {
 	 */
 	@Override
 	public void run() {
+		LogTool.traceC(this.getClass(), "Running search thread");
 		int count = 0;
 
 		ListIterator<String> li = this.reader.getSearchCache().getListIterator();
 
 		mainLoop: while (count != this.amount) {
-			if (!li.hasPrevious())
+			if (!li.hasPrevious()) {
 				break mainLoop;
-			String line = li.previous();
+			}
 
+			String line = li.previous();
 			Matcher m = this.pattern.matcher(line);
 
 			this.reader.setCurrentLineNumber(this.reader.getCurrentLineNumber() - 1);
@@ -52,6 +56,7 @@ class AsyncSearchUp extends AsyncSearch implements Runnable {
 					matchedPart = m.group(1);
 				}
 				SearchResult result = new SearchResult(line, matchedPart, this.reader.getCurrentLineNumber());
+				LogTool.traceC(this.getClass(), "Found match", result);
 				this.callback.call(result);
 				count++;
 			}

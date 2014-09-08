@@ -28,7 +28,13 @@ public class Helper {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public static File createFile(List<IProcessedFile> processedFiles) throws IOException {
-		LogTool.log("AMOUNT OF FILES SELECTED TO BE ZIPPED/OR NOT", processedFiles.size());
+		LogTool.log("Creating file from processed files");
+		LogTool.trace("Processed files", processedFiles);
+		if (processedFiles.size() == 0) {
+			return null;
+		}
+		
+		LogTool.log("AMOUNT OF FILES SELECTED (TO BE ZIPPED/OR NOT)", processedFiles.size());
 		if (processedFiles.size() > 1) {
 			return Helper.toZipFile(processedFiles);
 		} else {
@@ -55,13 +61,18 @@ public class Helper {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private static File toFile(IProcessedFile processedFile) throws IOException {
-		File file = new File("download.txt");
+		String fileName = "download.txt";
+		LogTool.trace("Creating file", fileName);
+		File file = new File(fileName);
 		BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
 		for (IThreadBlock threadBlock : processedFile.getThreadBlocks()) {
-			bwr.write(threadBlock.toString());
+			String threadBlockString = threadBlock.toString();
+			LogTool.trace("Writing threadBlock to file", threadBlockString);
+			bwr.write(threadBlockString);
 		}
 		bwr.flush();
 		bwr.close();
+		LogTool.trace("File created", file);
 		return file;
 	}
 
@@ -73,11 +84,14 @@ public class Helper {
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private static File toZipFile(List<IProcessedFile> files) throws IOException {
+		LogTool.trace("Creating zip file from", files);
 		List<String> fileStrings = new ArrayList<String>();
 		for (IProcessedFile file : files) {
+			LogTool.trace("Adding file to zip", file);
 			fileStrings.add(file.toString());
 		}
-
-		return ZipTool.writeZip("server-files.zip", fileStrings);
+		File file = ZipTool.writeZip("server-files.zip", fileStrings);
+		LogTool.trace("Created ZIP file");
+		return file;
 	}
 }

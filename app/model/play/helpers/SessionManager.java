@@ -28,26 +28,27 @@ public class SessionManager {
 	 * @return the JSON node
 	 */
 	public static ObjectNode addFile(IFileWrapper file) {
+		LogTool.trace("Begin adding file to session", file);
 		JsonNode rootNode = getSessionNode("fileIDs");
 		JsonNode fileIDs = rootNode.path("files");
-		
-		int count = 1;
-		if (file instanceof UploadedZipFile) {
-			count = ((UploadedZipFile)file).getBufferedReaders().size();
-		}
 
+		LogTool.trace("Checking how many files are inside the file");
+		int count = file.getBufferedReaders().size();
+
+		LogTool.trace("Creating JSON to represent the file");
 		Map<String, String> map = JSONHelper.generateJSONMap(new String[] { "id", "name", "size", "count" }, new String[] { file.getID(), file.getName(), Long.toString(file.getSize()), Integer.toString(count) });
 
 		JSONHelper.addMapToJsonArrayNode(fileIDs, map);
 		Cache.set(file.getID(), file, 1800);
 		Controller.session("fileIDs", rootNode.toString());
-		
+
 		ObjectNode result = Json.newObject();
 		result.put("id", file.getID());
 		result.put("name", file.getName());
 		result.put("size", file.getSize());
 		result.put("count", count);
 
+		LogTool.trace("Finish adding file to session. Returning JSON.");
 		return result;
 	}
 
@@ -57,10 +58,13 @@ public class SessionManager {
 	 * @param id the id
 	 */
 	public static void removeFile(String id) {
+		LogTool.trace("Begin removing file from session");
 		JsonNode rootNode = getSessionNode("fileIDs");
 		JsonNode fileIDs = rootNode.path("files");
 		JSONHelper.removeElementFromJsonArrayNode(fileIDs, "id", id);
+		LogTool.trace("Adding ammended node to session", rootNode);
 		Controller.session("fileIDs", rootNode.toString());
+		LogTool.trace("Finish removing file from session");
 	}
 
 	/**
@@ -70,21 +74,23 @@ public class SessionManager {
 	 * @return the files from cache
 	 */
 	private static List<IFileWrapper> getFilesFromCache(JsonNode array) {
+		LogTool.trace("Begin retreiving files from cache");
 		ArrayNode arrayNode = (ArrayNode) array;
 		Iterator<JsonNode> ite = arrayNode.elements();
 		List<IFileWrapper> files = new ArrayList<IFileWrapper>();
 
 		while (ite.hasNext()) {
 			JsonNode temp = ite.next();
-			LogTool.log("CACHE VALUE", temp.findValue("id").asText());
+			LogTool.trace("Cache value of file", temp.findValue("id").asText());
 			Object cacheObj = Cache.get(temp.findValue("id").asText());
 			if (cacheObj == null) {
 				continue;
 			}
 			IFileWrapper file = (IFileWrapper) cacheObj;
+			LogTool.trace("Adding file to file list", file);
 			files.add(file);
 		}
-
+		LogTool.trace("Finish retreiving files from cache", files);
 		return files;
 	}
 
@@ -108,6 +114,7 @@ public class SessionManager {
 	 * @return the session node
 	 */
 	public static JsonNode getSessionNode(String key) {
+		LogTool.trace("Begin getting session node with key", key);
 		String jsonString = Controller.session(key);
 		JsonNode rootNode = null;
 		if (jsonString == null) {
@@ -117,7 +124,7 @@ public class SessionManager {
 		} else {
 			rootNode = Json.parse(jsonString);
 		}
-
+		LogTool.trace("Found session node", rootNode);
 		return rootNode;
 	}
 

@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.dolan.callbacks.ICallback;
+import org.dolan.tools.LogTool;
 
 /**
  * The Class AsyncSearch.
@@ -31,6 +32,7 @@ abstract class AsyncSearch {
 	 * @param amount the amount
 	 */
 	public AsyncSearch(IFileReaderContainer reader, Pattern pattern, ICallback callback, int amount) {
+		LogTool.traceC(this.getClass(), "Creating async searcher");
 		Objects.requireNonNull(reader);
 		Objects.requireNonNull(callback);
 		Objects.requireNonNull(pattern);
